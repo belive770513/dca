@@ -130,7 +130,13 @@ nav.tabbar button[aria-current="page"] .plus{box-shadow:0 0 0 4px rgba(34,211,23
 .login form{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
 :root{padding-top:env(safe-area-inset-top,0px)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-table{table-layout:auto}
+table{table-layout:auto;font-size:12px}
+th,td{padding:8px 4px}
+th{white-space:normal;line-height:1.3;vertical-align:bottom}
+.simt th,.simt td{text-align:center}
+.more3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.more3 div{font-size:11px;color:var(--mute);line-height:1.4}
+.more3 b{display:block;font-family:var(--mono);font-size:13px;color:var(--ink);font-weight:600}
 .tw table{min-width:0}
 .kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin-top:10px}
 .kv div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:8px 10px;background:var(--s2);border-radius:10px}
@@ -165,17 +171,17 @@ table{table-layout:auto}
       <span class="chip" id="saveChip"><span class="dot" id="saveDot"></span><span id="status">載入中…</span></span>
     </div>
     <section class="card" aria-label="目標達成進度">
-      <div class="rowb small mute"><span>目標市值 <span class="m" style="color:var(--ink)" id="hTarget">—</span></span><span id="hSrc"></span></div>
+      <div class="rowb small mute"><span>累積市值目標 <span class="m" style="color:var(--ink)" id="hTarget">—</span></span><span id="hSrc"></span></div>
       <div style="display:flex;align-items:baseline;gap:8px;margin:12px 0">
         <span class="big" id="hPct">—</span><span class="small mute">達成率</span>
       </div>
       <div class="bar" role="img" id="hBar"><div class="c" id="hFillC"></div><div class="g" id="hFillG"></div><i style="left:25%"></i><i style="left:50%"></i><i style="left:75%"></i></div>
       <div class="scale" id="hScale"></div>
       <dl class="tiles" style="margin-top:14px" id="hTiles"></dl>
-      <div class="rowb xs mute" style="margin-top:10px;flex-wrap:wrap" id="hMore"></div>
+      <div class="more3" id="hMore"></div>
     </section>
     <section class="card" aria-label="大盤回檔觀察">
-      <div class="row"><h2>大盤回檔觀察</h2><span class="xs mute" id="ixMeta"></span></div>
+      <h2 style="white-space:nowrap">大盤回檔觀察</h2><div class="xs mute" id="ixMeta" style="margin-top:2px"></div>
       <div id="ixBody"></div>
     </section>
     <section class="card" aria-label="持有概況" style="padding-block:6px">
@@ -286,15 +292,11 @@ table{table-layout:auto}
     </section>
 
     <section class="card" aria-label="設定" style="padding-block:4px">
-      <div class="setrow"><label for="target">目標市值（元）</label><input class="inp sm m" type="number" id="target" step="10000" min="1" inputmode="numeric" style="width:150px;text-align:right"></div>
-      <div class="setrow"><span>大盤近一年最高收盤</span><span class="m small" id="ixHighTxt">—</span></div>
-      <div class="setrow"><span>大盤最近收盤</span><span class="m small" id="ixNowTxt">—</span></div>
+      <div class="setrow"><label for="target" style="white-space:nowrap">累積市值目標（元）</label><input class="inp sm m" type="number" id="target" step="10000" min="1" inputmode="numeric" style="width:150px;text-align:right"></div>
+      <div class="setrow" style="padding-block:8px"><span style="line-height:1.35">大盤創高價<br><span class="xs mute">（近12個月內）</span></span><span class="m" id="ixHighTxt" style="text-align:right;line-height:1.35">—</span></div>
+      <div class="setrow" style="padding-block:8px"><span style="line-height:1.35">最近大盤收盤價<br><span class="xs mute">&nbsp;</span></span><span class="m" id="ixNowTxt" style="text-align:right;line-height:1.35">—</span></div>
     </section>
 
-    <details class="card" id="pxCard">
-      <summary><h2>手動改現價</h2><span class="xs mute" style="margin-left:auto;margin-right:8px">較新的自動報價會蓋過手動價</span></summary>
-      <div id="pxBody" style="margin-top:10px"></div>
-    </details>
 
 
     <section class="card" aria-labelledby="symH">
@@ -427,7 +429,7 @@ function autoStamp(){var L=quotes.latest;return L&&L.asOf?L.asOf+'T'+(L.time||'1
 function priceNow(sym){
   var L=quotes.latest, a=L&&L.prices?parseFloat(L.prices[sym]):NaN, m=parseFloat(state.prices[sym]), mAt=(state.priceAt&&state.priceAt[sym])||'';
   var hasA=isFinite(a)&&a>0, hasM=isFinite(m)&&m>0;
-  if(hasA&&(!hasM||autoStamp()>=mAt)) return {px:a,src:'auto',at:L.asOf};
+  if(hasA) return {px:a,src:'auto',at:L.asOf};
   if(hasM) return {px:m,src:'manual',at:mAt.slice(0,10)};
   return {px:null,src:null,at:''};
 }
@@ -484,7 +486,7 @@ function renderHome(){
     '<div class="tile"><dt>累計投入</dt><dd>'+n0(cost)+'</dd></div>'+
     '<div class="tile"><dt>價差損益</dt><dd class="'+cls(gain)+'">'+(gain==null?'—':sign(gain)+abs0(gain))+(ret==null?'':'<small>'+sign(ret)+Math.abs(ret).toFixed(2)+'%</small>')+'</dd></div>';
   var cm=curMonth(),y12=addMonths(cm+'-01',-11).slice(0,7),l12=0;state.entries.forEach(function(e){if(e.date.slice(0,7)>=y12)l12+=amount(e)});
-  $('hMore').innerHTML='<span>距離目標 <span class="m" style="color:var(--ink)">'+(val==null?'—':(val>=T?'已超過 '+n0(val-T):n0(T-val)))+'</span></span><span>本月已投入 <span class="m" style="color:var(--ink)">'+n0(monthInvest(cm))+'</span></span><span>近 12 月 <span class="m" style="color:var(--ink)">'+n0(l12)+'</span></span>';
+  $('hMore').innerHTML='<div>'+(val!=null&&val>=T?'已超過目標':'距離目標')+'<b>'+(val==null?'—':n0(Math.abs(T-val)))+'</b></div><div>本月已投入<b>'+n0(monthInvest(cm))+'</b></div><div>近 12 月投入<b>'+n0(l12)+'</b></div>';
   renderIdx();renderHold();
 }
 function idxNow(){
@@ -501,8 +503,10 @@ function idxHigh(){
 }
 function renderIdx(){
   var hi=idxHigh(),nw=idxNow();
-  $('ixHighTxt').textContent=hi?n2(hi.v)+'（'+hi.date.replace(/-/g,'/')+'）':'抓取中…';
-  $('ixNowTxt').textContent=nw?n2(nw.v)+'（'+nw.label+'）':'—';
+  function dS(d){return d?(+d.slice(0,4))+'/'+(+d.slice(5,7))+'/'+(+d.slice(8,10)):''}
+  $('ixHighTxt').innerHTML=hi?n0(hi.v)+'<br><span class="xs mute">('+dS(hi.date)+')</span>':'抓取中…';
+  var nwD=nw?(nw.date||(quotes.latest&&quotes.latest.asOf?'':'')):'';
+  $('ixNowTxt').innerHTML=nw?n0(nw.v)+'<br><span class="xs mute">('+(nw.date?dS(nw.date):'前一交易日')+')</span>':'—';
   if(!hi||!nw){$('ixMeta').textContent='';$('ixBody').innerHTML='<p class="note" style="margin-top:8px">正在向證交所抓近一年的加權指數收盤價，第一次約需 20 秒。</p>';return}
   var H=hi.v,dd=(nw.v/H-1)*100,p15=H*.85,p25=H*.75,st,c='down';
   if(dd<=-25)st='已回檔 25% 以上';
@@ -715,7 +719,7 @@ function renderGoal(){
   var L=ser[ser.length-1],pct=L.val/T*100;
   var miles=[25,50,75,100].map(function(x){
     var th=T*x/100,hit=null;for(var i=0;i<ser.length;i++)if(ser[i].val>=th){hit=ser[i].m;break}
-    var pj=L.val>=th?'<span class="up">已達成</span>':projectDate(L.val,th);
+    var pj=L.val>=th?'<span class="up">已達成</span>':projectSpan(L.val,th);
     return '<tr><td>'+x+'%</td><td>'+wan(th)+'</td><td>'+(hit?monthEndDate(hit):'—')+'</td><td>'+pj+'</td></tr>'}).join('');
   var show=ser.slice(-12),W=340,H=170,Lx=34,R=8,Tp=10,B=24,iw=W-Lx-R,ih=H-Tp-B,n=show.length,maxP=0;
   show.forEach(function(r){maxP=Math.max(maxP,r.val/T*100)});maxP=maxP<=5?5:maxP<=10?10:maxP<=25?25:Math.ceil(maxP/25)*25;
@@ -727,7 +731,7 @@ function renderGoal(){
   $('chartBody').innerHTML='<section class="card"><div class="rowb"><span class="small mute">截至 '+roc(L.m)+'底</span><span class="small mute">目標 '+wan(T)+'</span></div>'+
     '<div style="display:flex;align-items:baseline;gap:8px;margin:10px 0"><span class="big" style="font-size:38px">'+(pct<10?pct.toFixed(2):pct.toFixed(1))+'%</span><span class="small mute">月底市值 <span class="m" style="color:var(--ink)">'+n0(L.val)+'</span></span></div>'+
     '<div class="svgw"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="每月達成率">'+g+'</svg></div>'+(ser.length>12?'<p class="note">圖表顯示最近 12 個月，完整數字見下表。</p>':'')+'</section>'+
-    '<section class="card"><h2 style="margin-bottom:6px">里程碑</h2><div class="tw"><table><thead><tr><th>里程碑</th><th>門檻</th><th>首次達成日</th><th>預計達成日</th></tr></thead><tbody>'+miles+'</tbody></table></div><p class="note" style="margin-top:8px">預計達成日依「目標試算」：每月投入 '+fmtWan(simC())+' 萬、年化 '+(simRate()*100)+'%，從目前市值往後推算，是試算不是預測。</p></section>'+
+    '<section class="card"><h2 style="margin-bottom:6px">里程碑</h2><div class="tw"><table><thead><tr><th>里程碑</th><th>門檻</th><th>首次達成日</th><th>預計最低達成天數</th></tr></thead><tbody>'+miles+'</tbody></table></div><p class="note" style="margin-top:8px">依近 12 個月平均投入本金（每月 '+fmtWan(avg12())+' 萬），以年化 8% 為基礎，從目前累積市值往後推算，試算並非結果預期。</p></section>'+
     '<section class="card"><h2 style="margin-bottom:6px">每月達成率</h2><div class="tw"><table><thead><tr><th>月底</th><th>市值</th><th>投入</th><th>達成率</th><th>較上月</th></tr></thead><tbody>'+rowsT+'</tbody></table></div></section>';
 }
 var SIM_R=[.08,.12,.18],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
@@ -741,6 +745,16 @@ function monthEndDate(m){
   if(m===curMonth()&&quotes.latest&&quotes.latest.asOf)return quotes.latest.asOf.replace(/-/g,'/');
   var d=new Date(+m.slice(0,4),+m.slice(5,7),0);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()-1);return fmtD(d);
 }
+function projectSpan(v0,th){
+  var C=avg12(),i=Math.pow(1.08,1/12)-1,v=v0,k=0;
+  if(!(C>0)&&v0<=0)return '—';
+  while(v<th&&k<600){var pv=v;v=v*(1+i)+C;k++;if(v>=th){
+    var f=(th-pv)/(v-pv),now=new Date(),d=new Date(now);d.setMonth(d.getMonth()+k-1);d.setDate(d.getDate()+Math.round(f*30.44));
+    var y=d.getFullYear()-now.getFullYear(),mo=d.getMonth()-now.getMonth(),dd=d.getDate()-now.getDate();
+    if(dd<0){mo--;dd+=new Date(d.getFullYear(),d.getMonth(),0).getDate()}if(mo<0){y--;mo+=12}
+    return '約 '+(y?y+'年':'')+(mo?mo+'個月':'')+(dd?dd+'天':'')}}
+  return '50 年以上';
+}
 function projectDate(v0,th){
   var C=simC(),i=Math.pow(1+simRate(),1/12)-1,v=v0,k=0;
   while(v<th&&k<600){var pv=v;v=v*(1+i)+C;k++;if(v>=th){var f=(th-pv)/(v-pv),d=new Date();d.setMonth(d.getMonth()+k-1);d.setDate(d.getDate()+Math.round(f*30.44));return '約 '+fmtD(d)}}
@@ -751,7 +765,7 @@ function simPath(C,R,T,cap){var i=Math.pow(1+R,1/12)-1,v=0,pts=[0],n=0;while(v<T
 function renderSim(){
   var T=state.target,cap=600,C=simC();
   var tbl='<tr class="sel"><td>'+fmtWan(C)+' 萬</td>'+SIM_R.map(function(R){var r=simPath(C,R,T,cap);return '<td class="m">'+(r.n==null?'—':(r.n/12).toFixed(1)+' 年<div class="xs faint">約 '+rocS(simYm(r.n))+'</div>')+'</td>'}).join('')+'</tr>';
-  var paths=SIM_R.map(function(R){return simPath(C,R,T,cap)}),maxN=0;paths.forEach(function(p){maxN=Math.max(maxN,p.n==null?cap:p.n)});
+  var RS=[simRate()],paths=RS.map(function(R){return simPath(C,R,T,cap)}),maxN=0;paths.forEach(function(p){maxN=Math.max(maxN,p.n==null?cap:p.n)});
   var W=340,H=220,L=40,Rr=10,Tp=14,B=26,iw=W-L-Rr,ih=H-Tp-B,top=T*1.12;
   function X(n){return L+iw*n/maxN}function Y(v){return Tp+ih-ih*Math.min(v,top)/top}
   var g='';[0,.25,.5,.75,1].forEach(function(f){var y=Y(T*f);g+='<line x1="'+L+'" x2="'+(L+iw)+'" y1="'+y+'" y2="'+y+'" stroke="#1F2A37"/><text x="'+(L-4)+'" y="'+(y+3)+'" text-anchor="end">'+(T*f/10000).toFixed(0)+'萬</text>'});
@@ -762,9 +776,9 @@ function renderSim(){
     var st=Math.max(1,Math.floor(p.pts.length/120)),d='',d2='';
     for(var i=0;i<p.pts.length;i+=st){d+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.pts[i]).toFixed(1);d2+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(Math.max(0,p.pts[i]-C*i)).toFixed(1)}
     var ln=p.pts.length-1;d+='L'+X(ln).toFixed(1)+' '+Y(p.pts[ln]).toFixed(1);
-    if(ui.simGn)g+='<path d="'+d2+'" fill="none" stroke="'+SIM_COL[k]+'" stroke-width="1.5" stroke-dasharray="2 4" opacity=".8"/>';
-    g+='<path d="'+d+'" fill="none" stroke="'+SIM_COL[k]+'" stroke-width="2.2"/>';
-    if(p.n!=null)g+='<circle cx="'+X(p.n)+'" cy="'+Y(T)+'" r="3.5" fill="'+SIM_COL[k]+'"/>';
+    if(ui.simGn)g+='<path d="'+d2+'" fill="none" stroke="'+SIM_COL[SIM_R.indexOf(RS[k])]+'" stroke-width="1.5" stroke-dasharray="2 4" opacity=".8"/>';
+    g+='<path d="'+d+'" fill="none" stroke="'+SIM_COL[SIM_R.indexOf(RS[k])]+'" stroke-width="2.2"/>';
+    if(p.n!=null)g+='<circle cx="'+X(p.n)+'" cy="'+Y(T)+'" r="3.5" fill="'+SIM_COL[SIM_R.indexOf(RS[k])]+'"/>';
   });
   var me='填入月底價後，圖上會畫出你的實際位置。';
   var S0=simStart(),ser=goalSeries().filter(function(r){return r.m>=S0});
@@ -772,18 +786,18 @@ function renderSim(){
     var off=function(m){return (+m.slice(0,4)-+S0.slice(0,4))*12+(+m.slice(5,7)-+S0.slice(5,7))+1};
     var pts=[[X(0),Y(0)]].concat(ser.filter(function(r){return off(r.m)<=maxN}).map(function(r){return [X(off(r.m)),Y(r.val)]}));
     if(pts.length>1){g+='<path d="'+pts.map(function(q,i){return (i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)}).join(' ')+'" fill="none" stroke="#A78BFA" stroke-width="2.5"/>';var lp=pts[pts.length-1];g+='<circle cx="'+lp[0]+'" cy="'+lp[1]+'" r="4.5" fill="#A78BFA" stroke="#121A24" stroke-width="2"/>'}
-    var L2=ser[ser.length-1];me='我的位置：'+roc(L2.m)+'底市值 '+n0(L2.val)+' 元（達成 '+(L2.val/T*100).toFixed(2)+'%）';
+    var L2=ser[ser.length-1];me=(+L2.m.slice(0,4)-1911)+'年'+(+L2.m.slice(5,7))+'月底，持倉市值'+n0(L2.val)+'元（達成'+(L2.val/T*100).toFixed(2)+'%）';
   }
   $('chartBody').innerHTML='<section class="card"><div class="rowb"><h2>達成 '+wan(T)+'需要多久</h2><span class="xs faint">試算，不是預測</span></div>'+
     '<p class="note" style="margin-top:4px">自 '+roc(simStart())+'起每月固定投入，年化報酬固定，不含手續費與稅。</p>'+
-    '<div class="tw" style="margin-top:8px"><table><thead><tr><th>每月投入</th><th>8%</th><th>12%</th><th>18%</th></tr></thead><tbody>'+tbl+'</tbody></table></div></section>'+
+    '<div class="tw" style="margin-top:8px"><table class="simt"><thead><tr><th>每月投入</th><th>8%</th><th>12%</th><th>18%</th></tr></thead><tbody>'+tbl+'</tbody></table></div></section>'+
     '<section class="card"><div class="row" style="align-items:flex-end"><label class="f" style="flex:1">每月投入（萬）<input class="inp m" type="number" id="simWan" step="0.1" min="0.1" inputmode="decimal" value="'+fmtWan(C).replace(/,/g,'')+'"></label>'+
-    '<div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--mute)">預計達成日用<div class="seg soft" role="group" aria-label="預計達成日採用的年化報酬" id="simRateSeg">'+SIM_R.map(function(R){return '<button type="button" data-r="'+R+'" aria-pressed="'+(R===simRate())+'" style="min-height:40px;padding:0 10px">'+(R*100)+'%</button>'}).join('')+'</div></div></div>'+
+    '<div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--mute)">年化報酬<div class="seg soft" role="group" aria-label="預計達成日採用的年化報酬" id="simRateSeg">'+SIM_R.map(function(R){return '<button type="button" data-r="'+R+'" aria-pressed="'+(R===simRate())+'" style="min-height:40px;padding:0 10px">'+(R*100)+'%</button>'}).join('')+'</div></div></div>'+
     (parseFloat(state.simWan)>0?'':'<p class="note" style="margin-top:6px">預設帶入近 12 個月平均每月投入，改過會記住。</p>')+
     '<div class="svgw" style="margin-top:10px"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="每月投入 '+fmtWan(C)+' 萬的成長試算">'+g+'</svg></div>'+
-    '<div class="leg">'+SIM_R.map(function(R,k){var p=paths[k];return '<span><i style="border-color:'+SIM_COL[k]+'"></i>'+(R*100)+'% '+(p.n==null?'50 年以上':rocS(simYm(p.n)))+'</span>'}).join('')+'<span><i style="border-color:#A78BFA"></i>我的位置</span></div>'+
+    '<div class="leg">'+RS.map(function(R){return '<span><i style="border-color:'+SIM_COL[SIM_R.indexOf(R)]+'"></i>'+(R*100)+'% 目標利率</span>'}).join('')+'<span><i style="border-color:#A78BFA"></i>我的位置</span></div>'+
     '<div class="acts" style="margin-top:10px"><label class="small mute" style="display:flex;align-items:center;gap:6px;min-height:36px"><input type="checkbox" id="simPr"'+(ui.simPr?' checked':'')+'> 顯示投入本金</label><label class="small mute" style="display:flex;align-items:center;gap:6px;min-height:36px"><input type="checkbox" id="simGn"'+(ui.simGn?' checked':'')+'> 顯示獲利</label></div>'+
-    '<p class="note" style="margin-top:4px">'+esc(me)+'</p></section>';
+    '<p class="note" style="margin-top:4px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(me)+'</p></section>';
   $('simWan').addEventListener('change',guard('試算',function(){var v=parseFloat(this.value);if(v>0&&v<=10000){state.simWan=Math.round(v*10)/10;scheduleSave()}renderSim()}));
   document.querySelectorAll('#simRateSeg button').forEach(function(b){b.addEventListener('click',guard('試算',function(){state.simRate=+b.dataset.r;scheduleSave();renderSim()}))});
   $('simPr').addEventListener('change',function(){ui.simPr=this.checked;renderSim()});
@@ -799,7 +813,6 @@ function renderMore(){
   if(document.activeElement!==$('target'))$('target').value=state.target;
   renderIdx();
   renderBackup();renderQuoteState();
-  if($('pxCard').open)renderPx();
 }
 function renderQuoteState(){
   var L=quotes.latest;
@@ -823,7 +836,6 @@ function renderPx(){
   }))});
 }
 $('target').addEventListener('change',guard('目標',function(){var v=Math.round(parseFloat($('target').value));if(isFinite(v)&&v>0){state.target=v;scheduleSave();renderAll();toast('目標改為 '+wan(v))}else $('target').value=state.target}));
-$('pxCard').addEventListener('toggle',guard('現價',function(){if($('pxCard').open)renderPx()}));
 
 /* 我的標的 */
 function renderSyms(){
