@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&family=DM+Mono:wght@400;500&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap">
 <style>
 :root{
   color-scheme:dark;
@@ -21,10 +21,22 @@
   --ink:#E6EDF3; --ink2:#C4CFDA; --mute:#8B9AAB; --faint:#6B7A8C;
   --acc:#22D3EE; --accInk:#06131A; --accSoft:rgba(34,211,238,.12);
   --up:#FF6B6F; --down:#2FCB85; --warn:#F5B83D; --vio:#A78BFA;
-  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --mono:"DM Mono","IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
   --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
 }
 [hidden]{display:none!important}
+h1,h2{letter-spacing:.02em}
+input[type=date].inp,input[type=month].inp{height:46px;line-height:46px;padding-top:0;padding-bottom:0}
+input[type=date]::-webkit-date-and-time-value,input[type=month]::-webkit-date-and-time-value{text-align:left;margin:0;line-height:46px}
+.filt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.filt select{width:100%;min-width:0}
+.mt{width:100%;border-collapse:collapse;font-size:12px;margin-top:2px}
+.mt td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.mt td:nth-child(2),.mt td:nth-child(3){text-align:right;font-family:var(--mono);padding-left:8px;white-space:nowrap}
+.mt td:nth-child(3){width:44px}
+.mt .bar{height:5px;border-radius:3px;background:var(--line);margin-top:5px}
+.mt .bar span{display:block;height:100%;border-radius:3px}
+.mlab{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin:14px 0 2px}
 .hd2{display:grid;grid-template-columns:1fr auto;align-items:center;row-gap:2px}
 .hd2 h1{margin:0;font-size:22px;font-weight:700}
 .brand,.ver{font-family:Rajdhani,var(--sans);font-weight:700;font-size:14px;letter-spacing:.18em;color:var(--mute)}
@@ -264,16 +276,16 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
 
   <!-- 紀錄 -->
   <section class="view" id="v-rec" aria-label="紀錄" hidden>
-    <div class="hd"><h1>紀錄</h1>
-      <div style="display:flex;gap:6px">
-        <select class="inp sm" id="recYear" aria-label="年份" style="width:auto"></select>
-        <select class="inp sm" id="recSym" aria-label="標的" style="width:auto"></select>
-      </div>
-    </div>
+    <div class="hd"><h1>紀錄</h1></div>
     <div class="seg soft" role="tablist" aria-label="紀錄分類">
       <button type="button" role="tab" data-t="buy" aria-selected="true">買進明細</button>
       <button type="button" role="tab" data-t="inc" aria-selected="false">收入明細</button>
       <button type="button" role="tab" data-t="sum" aria-selected="false">每月合計</button>
+    </div>
+    <div class="filt">
+      <select class="inp sm" id="recYear" aria-label="年份"></select>
+      <select class="inp sm" id="recMon" aria-label="月份"></select>
+      <select class="inp sm" id="recSym" aria-label="標的"></select>
     </div>
     <p class="note" id="recCount"></p>
     <div class="view" id="recBody" style="gap:10px"></div>
@@ -312,7 +324,7 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
     <section class="card" aria-label="設定" style="padding-block:4px">
       <div class="setrow"><label for="target" style="white-space:nowrap">HODL目標（萬）</label><input class="inp sm m" type="number" id="target" step="1" min="1" inputmode="decimal" style="width:96px;min-width:0;text-align:right"></div>
       <div class="setrow" style="padding-block:8px"><span style="line-height:1.35">大盤創高價<br><span class="xs mute">（近12個月內）</span></span><span class="m" id="ixHighTxt" style="text-align:right;line-height:1.35">—</span></div>
-      <div class="setrow" style="padding-block:8px"><span style="line-height:1.35">最近大盤收盤價<br><span class="xs mute">&nbsp;</span></span><span class="m" id="ixNowTxt" style="text-align:right;line-height:1.35">—</span></div>
+      <div class="setrow" style="padding-block:8px"><span style="line-height:1.35">最近收盤價<br><span class="xs mute">&nbsp;</span></span><span class="m" id="ixNowTxt" style="text-align:right;line-height:1.35">—</span></div>
     </section>
 
 
@@ -598,17 +610,17 @@ $('buyForm').addEventListener('submit',guard('新增買進',function(ev){
   $('fPrice').value='';$('fShares').value='';$('fNote').value='';updatePreview();
   scheduleSave();renderAll();toast('已新增 '+ui.sym+' '+n0(p*s+f)+' 元');
 }));
-$('incForm').addEventListener('submit',guard('新增收入',function(ev){
-  ev.preventDefault();
+$('incForm').addEventListener('submit',function(ev){ev.preventDefault();var ae=document.activeElement;if(ae&&ae.blur)ae.blur();setTimeout(submitIncome,60)});
+var submitIncome=guard('新增收入',function(){
   var m=$('iMonth').value.trim(),a=parseFloat($('iAmt').value);
-  if(!/^\d{4}-\d{2}$/.test(m)){$('iErr').textContent='請選月份。';return}
-  if(!(a>0)){$('iErr').textContent='金額要大於 0。';return}
+  if(!/^\d{4}-\d{2}$/.test(m)){$('iErr').textContent='請選月份。';toast('請選月份');return}
+  if(!(a>0)){$('iErr').textContent='金額要大於 0。';toast('金額要大於 0');return}
   var rec={id:uid(),month:m,src:ui.src,amount:a,note:$('iNote').value.trim()};
-  if(ui.src==='custom'){var lb=$('iLabel').value.trim();if(!lb){$('iErr').textContent='請填來源名稱，例如「資本利得」。';return}rec.label=lb}
+  if(ui.src==='custom'){var lb=$('iLabel').value.trim();if(!lb){$('iErr').textContent='請填來源名稱，例如「資本利得」。';toast('請填來源名稱');return}rec.label=lb}
   $('iErr').textContent='';
   state.income.push(rec);$('iAmt').value='';$('iNote').value='';
   scheduleSave();renderAll();toast('已新增收入 '+n0(a)+' 元');
-}));
+});
 
 /* ---------- 紀錄 ---------- */
 function srcName(r){return r.src==='custom'?(r.label||'自填來源'):(SRC[r.src]||r.src)}
@@ -627,13 +639,20 @@ function renderRec(){
   fillSel(yEl,[['all','全部年份']].concat(ys.map(function(y){return [y,y+' 年']})),true);
   if(!had){var ty=today().slice(0,4);if(ys.indexOf(ty)>=0)yEl.value=ty}
   fillSel($('recSym'),[['all','全部標的']].concat(heldCodes().map(function(c){return [c,c]})),true);
-  $('recSym').hidden=ui.recTab!=='buy';
-  var fy=yEl.value;
-  if(ui.recTab==='buy')renderBuys(fy);else if(ui.recTab==='inc')renderIncome(fy);else renderMonthSum(fy);
+  $('recSym').disabled=ui.recTab!=='buy';$('recSym').style.opacity=ui.recTab==='buy'?1:.4;
+  var fy=yEl.value,mset={};
+  state.entries.forEach(function(e){var m=e.date.slice(0,7);if(fy==='all'||m.slice(0,4)===fy)mset[m]=1});
+  state.income.forEach(function(r){if(fy==='all'||r.month.slice(0,4)===fy)mset[r.month]=1});
+  var mEl=$('recMon'),mHad=mEl.options.length>0,ml=Object.keys(mset).sort().reverse();
+  fillSel(mEl,[['all','全部月份']].concat(ml.map(function(m){return [m,rocS(m)]})),true);
+  if(!mHad&&ml.length)mEl.value=ml[0];
+  var fm=mEl.value;
+  function inM(m){return (fy==='all'||m.slice(0,4)===fy)&&(fm==='all'||m===fm)}
+  if(ui.recTab==='buy')renderBuys(inM);else if(ui.recTab==='inc')renderIncome(inM);else renderMonthSum(inM);
 }
-function renderBuys(fy){
+function renderBuys(inM){
   var fs=$('recSym').value;
-  var list=state.entries.filter(function(e){return (fy==='all'||e.date.slice(0,4)===fy)&&(fs==='all'||e.sym===fs)}).sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:(a.id<b.id?1:-1))});
+  var list=state.entries.filter(function(e){return inM(e.date.slice(0,7))&&(fs==='all'||e.sym===fs)}).sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:(a.id<b.id?1:-1))});
   if(!state.entries.length){$('recCount').textContent='';$('recBody').innerHTML='<div class="empty">還沒有買進紀錄。按下方「＋」新增第一筆。</div>';return}
   var groups={},order=[];list.forEach(function(e){var m=e.date.slice(0,7);if(!groups[m]){groups[m]=[];order.push(m)}groups[m].push(e)});
   if(ui.recAuto){ui.expRec={};if(order.length)ui.expRec[order[0]]=true}
@@ -651,8 +670,8 @@ function renderBuys(fy){
   document.querySelectorAll('#recBody .gh').forEach(function(b){b.addEventListener('click',guard('展開',function(){ui.recAuto=false;ui.expRec[b.dataset.m]=!ui.expRec[b.dataset.m];renderRec()}))});
   document.querySelectorAll('#recBody .del').forEach(function(b){armDelete(b,function(){state.entries=state.entries.filter(function(e){return e.id!==b.dataset.id});scheduleSave();renderAll();toast('已刪除一筆買進')})});
 }
-function renderIncome(fy){
-  var list=state.income.filter(function(r){return fy==='all'||r.month.slice(0,4)===fy}).sort(function(a,b){return a.month<b.month?1:(a.month>b.month?-1:(a.id<b.id?1:-1))});
+function renderIncome(inM){
+  var list=state.income.filter(function(r){return inM(r.month)}).sort(function(a,b){return a.month<b.month?1:(a.month>b.month?-1:(a.id<b.id?1:-1))});
   if(!state.income.length){$('recCount').textContent='';$('recBody').innerHTML='<div class="empty">還沒有收入紀錄。按「＋」→「收入」新增。</div>';return}
   var tot=0;list.forEach(function(r){tot+=r.amount});
   $('recCount').textContent=list.length?list.length+' 筆，合計 '+n0(tot)+' 元':'此範圍沒有紀錄';
@@ -662,29 +681,41 @@ function renderIncome(fy){
   }).join('')+'</div>':'';
   document.querySelectorAll('#recBody .del').forEach(function(b){armDelete(b,function(){state.income=state.income.filter(function(r){return r.id!==b.dataset.id});scheduleSave();renderAll();toast('已刪除一筆收入')})});
 }
-function renderMonthSum(fy){
-  var by={};function blank(){return {job:0,rent:0,div:0,other:0}}
-  state.income.forEach(function(r){if(fy!=='all'&&r.month.slice(0,4)!==fy)return;by[r.month]=by[r.month]||blank();var k=(r.src==='job'||r.src==='rent'||r.src==='div')?r.src:'other';by[r.month][k]+=r.amount});
-  state.entries.forEach(function(e){var m=e.date.slice(0,7);if((fy==='all'||m.slice(0,4)===fy)&&!by[m])by[m]=blank()});
-  var ms=Object.keys(by).sort().reverse();
+var PAL=['#22D3EE','#A78BFA','#F5B83D','#F472B6','#60A5FA','#34D399','#FB923C','#94A3B8'];
+function srcKey(r){return r.src==='custom'?'c:'+(r.label||'自填'):r.src}
+function srcColor(k){var base={job:0,rent:1,div:2};if(k in base)return PAL[base[k]];var labs=[];state.income.forEach(function(r){if(r.src==='custom'){var kk='c:'+(r.label||'自填');if(labs.indexOf(kk)<0)labs.push(kk)}});var i=labs.indexOf(k);return PAL[(3+(i<0?0:i))%PAL.length]}
+function symColor(c){var i=CODES.indexOf(c);if(i<0)i=CODES.length+heldCodes().indexOf(c);return PAL[(4+i)%PAL.length]}
+function mTable(rows,total){
+  rows.sort(function(a,b){return b.v-a.v});
+  return '<table class="mt">'+rows.map(function(r){var pc=total>0?r.v/total*100:0;
+    return '<tr><td>'+esc(r.n)+'<div class="bar"><span style="width:'+pc.toFixed(1)+'%;background:'+r.c+'"></span></div></td><td>'+n0(r.v)+'</td><td>'+(pc<1&&pc>0?'<1':Math.round(pc))+'%</td></tr>'}).join('')+'</table>';
+}
+function renderMonthSum(inM){
+  var ms={};
+  state.income.forEach(function(r){if(inM(r.month))ms[r.month]=1});
+  state.entries.forEach(function(e){var m=e.date.slice(0,7);if(inM(m))ms[m]=1});
+  ms=Object.keys(ms).sort().reverse();
   var allInc=0,allInv=0;state.income.forEach(function(r){allInc+=r.amount});state.entries.forEach(function(e){allInv+=amount(e)});
   var bal=allInc-allInv;
   $('recCount').innerHTML=(state.income.length||state.entries.length)?'全部期間累計未投入餘額 <b class="m '+(bal<0?'down':'')+'">'+sign(bal)+abs0(bal)+'</b> 元（負數代表買進超過記錄的收入）':'';
   if(!ms.length){$('recBody').innerHTML='<div class="empty">這個範圍還沒有收入或買進。</div>';return}
-  var colors={job:'var(--acc)',rent:'var(--vio)',div:'var(--warn)',other:'var(--faint)'},names={job:'打工',rent:'房租',div:'股利',other:'自填'};
   $('recBody').innerHTML=ms.map(function(m){
-    var b=by[m],sum=b.job+b.rent+b.div+b.other,inv=monthInvest(m),rest=sum-inv,ratio=sum>0?inv/sum*100:null;
-    var keys=['job','rent','div','other'].filter(function(k){return b[k]>0});
+    var inc={},buy={},sum=0,inv=0;
+    state.income.forEach(function(r){if(r.month!==m)return;var k=srcKey(r);inc[k]=inc[k]||{n:srcName(r),v:0,c:srcColor(k)};inc[k].v+=r.amount;sum+=r.amount});
+    state.entries.forEach(function(e){if(e.date.slice(0,7)!==m)return;buy[e.sym]=buy[e.sym]||{n:e.sym+' '+symName(e.sym),v:0,c:symColor(e.sym)};buy[e.sym].v+=amount(e);inv+=amount(e)});
+    var rest=sum-inv,ratio=sum>0?inv/sum*100:null;
+    var incRows=Object.keys(inc).map(function(k){return inc[k]}),buyRows=Object.keys(buy).map(function(k){return buy[k]});
     return '<section class="card" style="padding:14px 16px"><div class="rowb"><h2>'+roc(m)+'</h2><span class="small mute">投入比例 <span class="m '+(ratio>100?'warn':'')+'" style="'+(ratio!=null&&ratio<=100?'color:var(--ink)':'')+'">'+(ratio==null?'—':ratio.toFixed(0)+'%')+'</span></span></div>'+
       '<dl class="tiles" style="margin-top:10px"><div class="tile"><dt>收入</dt><dd>'+n0(sum)+'</dd></div><div class="tile"><dt>當月買進</dt><dd>'+n0(inv)+'</dd></div><div class="tile"><dt>未投入餘額</dt><dd class="'+(rest<0?'down':'')+'">'+sign(rest)+abs0(rest)+'</dd></div></dl>'+
-      (sum>0?'<div role="img" aria-label="收入組成" style="display:flex;height:6px;border-radius:999px;overflow:hidden;margin-top:12px;gap:2px">'+keys.map(function(k){return '<div style="width:'+(b[k]/sum*100)+'%;background:'+colors[k]+'"></div>'}).join('')+'</div>'+
-      '<div class="leg" style="margin-top:6px">'+keys.map(function(k){return '<span><i style="border-color:'+colors[k]+';width:8px;border-top-width:8px;border-radius:2px"></i>'+names[k]+' <span class="m">'+n0(b[k])+'</span></span>'}).join('')+'</div>':'')+
+      (incRows.length?'<div class="mlab"><span>收入組成</span><span class="m">'+n0(sum)+'</span></div>'+mTable(incRows,sum):'')+
+      (buyRows.length?'<div class="mlab"><span>買進配置</span><span class="m">'+n0(inv)+'</span></div>'+mTable(buyRows,inv):'')+
       '</section>';
   }).join('');
 }
 document.querySelectorAll('#v-rec [role=tab]').forEach(function(b){b.addEventListener('click',guard('切換',function(){ui.recTab=b.dataset.t;keepUi();renderRec()}))});
-$('recYear').addEventListener('change',guard('篩選',function(){ui.recAuto=true;renderRec()}));
+$('recYear').addEventListener('change',guard('篩選',function(){ui.recAuto=true;$('recMon').innerHTML='';renderRec()}));
 $('recSym').addEventListener('change',guard('篩選',function(){ui.recAuto=true;renderRec()}));
+$('recMon').addEventListener('change',guard('篩選',function(){ui.recAuto=true;renderRec()}));
 
 /* ---------- 圖表 ---------- */
 function niceMax(v){if(v<=0)return 1;var p=Math.pow(10,Math.floor(Math.log10(v))),f=v/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
@@ -848,7 +879,7 @@ function renderQuoteState(){
   if(!L||!L.asOf){$('qState').innerHTML='<span class="warn">尚未收到</span>';$('qMsg').textContent=qErr?'抓不到報價：'+qErr:'打開 App 就會向證交所抓報價；月底價會自動補抓當月最後一個交易日的收盤價。';return}
   var days=Math.round((new Date(today())-new Date(L.asOf))/864e5),late=days>4||!!qErr;
   $('qState').innerHTML=qErr?'<span class="up">更新失敗</span>':late?'<span class="up">'+days+' 天未更新</span>':'<span class="down">'+(marketOpen()?'盤中更新中':'正常')+'</span>';
-  $('qMsg').textContent='最近一次：'+L.asOf+' '+(L.time||'').slice(0,5)+(qErr?'。上次更新失敗：'+qErr:'')+'。只抓一次收盤價。';
+  $('qMsg').textContent='最近更新時間：'+L.asOf+' '+(L.time||'').slice(0,5)+'。'+(qErr?'上次更新失敗：'+qErr:'');
 }
 function renderPx(){
   var codes=heldCodes();
