@@ -24,6 +24,7 @@
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
   --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
 }
+[hidden]{display:none!important}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-tap-highlight-color:transparent}
 *,*::before,*::after{box-sizing:border-box}
@@ -294,14 +295,25 @@ nav.tabbar button[aria-current="page"] .plus{box-shadow:0 0 0 4px rgba(34,211,23
       <div id="mpBody" style="margin-top:10px;display:flex;flex-direction:column;gap:12px"></div>
     </details>
 
+    <section class="card" aria-labelledby="symH">
+      <div class="rowb"><h2 id="symH">我的標的</h2><span class="xs mute">記帳和報價都用這份清單</span></div>
+      <div class="list" id="symList" style="margin-top:6px"></div>
+      <form id="symForm" autocomplete="off" novalidate style="display:flex;gap:8px;margin-top:10px;align-items:flex-end">
+        <label class="f" style="flex:1">股票代號<input class="inp sm m" type="text" id="symCode" maxlength="6" placeholder="例如 0050" autocapitalize="characters"></label>
+        <button type="submit" class="btn2 acc" style="min-height:38px">新增</button>
+      </form>
+      <div class="err" id="symErr" aria-live="polite"></div>
+      <p class="note">輸入代號後會向證交所查名稱；上市、上櫃都可以。刪除只會從清單移除，已記的買進紀錄不受影響。</p>
+    </section>
+
     <section class="card" aria-labelledby="rule">
-      <h2 id="rule" style="margin-bottom:8px">我的投資紀律</h2>
-      <ol style="margin:0;padding-left:20px;font-size:13px;line-height:1.8;color:var(--ink2)">
-        <li>每月業外收入投資，不預設進場價。</li>
-        <li>大盤自高點回檔 15%、25% 時，提高正2（00685L）購買比例。</li>
-        <li>投資目標市值：<span class="tgtTxt">333 萬</span>。</li>
-        <li>不做短線進出，專注做成退休金帳戶。</li>
-      </ol>
+      <div class="rowb"><h2 id="rule">我的投資紀律</h2><button type="button" class="tiny" id="ruleEdit">編輯</button></div>
+      <ol id="ruleList" style="margin:8px 0 0;padding-left:20px;font-size:13px;line-height:1.8;color:var(--ink2)"></ol>
+      <div id="ruleEditBox" hidden style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+        <label class="f" for="ruleText">一行一條紀律</label>
+        <textarea class="inp" id="ruleText" rows="6" style="padding:10px 12px;min-height:140px;resize:vertical;line-height:1.6"></textarea>
+        <div class="acts"><button type="button" class="btn2 acc" id="ruleSave">儲存</button><button type="button" class="btn2" id="ruleCancel">取消</button></div>
+      </div>
     </section>
 
     <section class="card" style="background:var(--s2);border-style:dashed" aria-label="加到主畫面">
@@ -330,10 +342,13 @@ nav.tabbar button[aria-current="page"] .plus{box-shadow:0 0 0 4px rgba(34,211,23
 'use strict';
 var KIND={dca:'定期定額',extra:'手動加碼',reinvest:'股利再投入'};
 var SRC={job:'打工收入',rent:'房租收入',div:'股利再投入',other:'其他'};
-var SYMS=[{c:'0055',n:'元大MSCI金融'},{c:'00685L',n:'群益台灣加權正2'},{c:'00938',n:'凱基優選30'},{c:'00701',n:'國泰股利精選30'},{c:'6005',n:'群益證'}];
-var CODES=SYMS.map(function(x){return x.c});
-var BACKUP_BASE='2026-09-21', SIM_START='2026-09';
-var state={entries:[],prices:{},checks:{},income:[],mprices:{},backup:{},target:3330000,idx:{},priceAt:{}};
+var DEFAULT_SYMS=[{c:'0055',n:'元大MSCI金融'},{c:'00685L',n:'群益台灣加權正2'},{c:'00938',n:'凱基優選30'},{c:'00701',n:'國泰股利精選30'},{c:'6005',n:'群益證'}];
+var DEFAULT_RULES=['每月業外收入投資，不預設進場價。','大盤自高點回檔 15%、25% 時，提高正2（00685L）購買比例。','投資目標市值：333 萬。','不做短線進出，專注做成退休金帳戶。'];
+var SYMS=[],CODES=[];
+function setSyms(list){SYMS=(list||[]).filter(function(x){return x&&x.c});CODES=SYMS.map(function(x){return x.c})}
+var BACKUP_BASE='2026-09-21', SIM_START=null;
+function simStart(){if(SIM_START)return SIM_START;var ms=monthList();return ms.length?ms[0]:curMonth()}
+var state={entries:[],prices:{},checks:{},income:[],mprices:{},backup:{},target:3330000,idx:{},priceAt:{},syms:null,rules:null};
 var quotes={latest:null,monthEnd:{}};
 var ref=null, saveTimer=null, dirty=false, saveTry=0, loaded=false;
 var ui={view:'home',addMode:'buy',sym:'00685L',kind:'dca',src:'job',recTab:'buy',chartTab:'cv',simC:30000,simPr:false,simGn:false,expRec:{},recAuto:true,expSnap:{}};
@@ -372,7 +387,7 @@ function toast(t){var el=$('toast');el.textContent=t;el.classList.add('on');clea
 function setStatus(t,kind){$('status').textContent=t;$('saveDot').className='dot'+(kind?' '+kind:'')}
 
 /* ---------- 儲存 ---------- */
-function payload(){return {entries:state.entries,prices:state.prices,checks:state.checks,income:state.income,mprices:state.mprices,backup:state.backup,target:state.target,idx:state.idx,priceAt:state.priceAt,qLatest:quotes.latest||null,qMonth:quotes.monthEnd||{}}}
+function payload(){return {entries:state.entries,prices:state.prices,checks:state.checks,income:state.income,mprices:state.mprices,backup:state.backup,target:state.target,idx:state.idx,priceAt:state.priceAt,qLatest:quotes.latest||null,qMonth:quotes.monthEnd||{},syms:state.syms||[],rules:state.rules||[]}}
 function scheduleSave(){dirty=true;setStatus('儲存中…','w');clearTimeout(saveTimer);saveTimer=setTimeout(doSave,500)}
 function doSave(){
   clearTimeout(saveTimer);
@@ -396,6 +411,10 @@ function adopt(d){
   if(d.target>0)state.target=+d.target;state.idx=thaw(d.idx,{});state.priceAt=thaw(d.priceAt,{});
   if(!Array.isArray(state.entries))state.entries=[];
   if(!Array.isArray(state.income))state.income=[];
+  var had=state.entries.length||state.income.length;
+  state.syms=Array.isArray(d.syms)?thaw(d.syms,[]):(had?thaw(DEFAULT_SYMS,[]):[]);
+  state.rules=Array.isArray(d.rules)?thaw(d.rules,[]):(had?DEFAULT_RULES.slice():[]);
+  setSyms(state.syms);
   if(d.qLatest&&(!quotes.latest||(d.qLatest.asOf||'')>(quotes.latest.asOf||'')))quotes.latest=thaw(d.qLatest,null);
   var qm=thaw(d.qMonth,{});Object.keys(qm).forEach(function(m){var a=quotes.monthEnd[m],b=qm[m];if(!a||(b.final&&!a.final)||(!a.final&&(b.asOf||'')>(a.asOf||'')))quotes.monthEnd[m]=b});
 }
@@ -475,8 +494,8 @@ function renderIdx(){
   var x=state.idx||{},hi=parseFloat(x.high),nw=idxNow();
   if(!(hi>0)||!nw){$('ixMeta').textContent='';$('ixBody').innerHTML='<p class="note" style="margin-top:8px">到「更多」填入大盤歷史高點，就能看回檔幅度。'+(nw?'':'今日指數會由自動報價填入。')+'</p>';return}
   var dd=(nw.v/hi-1)*100,p15=hi*.85,p25=hi*.75,st,c='down';
-  if(dd<=-25)st='已回檔 25% 以上，依紀律提高正2比例';
-  else if(dd<=-15)st='已回檔 15% 以上，依紀律提高正2比例';
+  if(dd<=-25)st='已回檔 25% 以上';
+  else if(dd<=-15)st='已回檔 15% 以上';
   else{st='距 −15% 加碼點還差 '+(dd+15).toFixed(1)+'%（'+n2(nw.v-p15)+' 點）';c=dd<0?'down':'up'}
   $('ixMeta').innerHTML='高點 <span class="m">'+n0(hi)+'</span> · '+(nw.src==='auto'?'收盤 ':'今日 ')+'<span class="m">'+n2(nw.v)+'</span>';
   var fill=Math.max(0,Math.min(100,-dd/30*100));
@@ -504,8 +523,8 @@ function renderHold(){
 function renderAdd(){
   $('addModeBuy').setAttribute('aria-pressed',String(ui.addMode==='buy'));$('addModeInc').setAttribute('aria-pressed',String(ui.addMode==='inc'));
   $('buyForm').hidden=ui.addMode!=='buy';$('incForm').hidden=ui.addMode!=='inc';
-  if(allCodes().indexOf(ui.sym)<0)ui.sym=CODES[1];
-  $('symPills').innerHTML=allCodes().map(function(c){return '<button type="button" class="pill m" data-c="'+esc(c)+'" aria-pressed="'+(c===ui.sym)+'">'+esc(c)+'</button>'}).join('');
+  if(allCodes().indexOf(ui.sym)<0)ui.sym=allCodes()[0]||'';
+  $('symPills').innerHTML=allCodes().length?allCodes().map(function(c){return '<button type="button" class="pill m" data-c="'+esc(c)+'" aria-pressed="'+(c===ui.sym)+'">'+esc(c)+'</button>'}).join(''):'<span class="small mute">還沒有標的。請先到「更多 → 我的標的」新增股票代號。</span>';
   $('symName').textContent=symName(ui.sym);
   document.querySelectorAll('#kindSeg button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.k===ui.kind))});
   document.querySelectorAll('#srcPills button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.s===ui.src))});
@@ -528,6 +547,7 @@ $('srcPills').addEventListener('click',guard('來源',function(ev){var b=ev.targ
 $('buyForm').addEventListener('submit',guard('新增買進',function(ev){
   ev.preventDefault();
   var p=parseFloat($('fPrice').value),s=parseInt($('fShares').value,10),f=parseFloat($('fFee').value)||0;
+  if(!ui.sym){$('fErr').textContent='請先到「更多 → 我的標的」新增股票代號。';return}
   if(!$('fDate').value){$('fErr').textContent='請填日期。';return}
   if(!(p>0)){$('fErr').textContent='成交價要大於 0。';return}
   if(!(s>=1)){$('fErr').textContent='股數要是 1 以上的整數。';return}
@@ -697,7 +717,7 @@ function renderGoal(){
     '<section class="card"><h2 style="margin-bottom:6px">每月底達成率</h2><div class="tw"><table><thead><tr><th>月底</th><th>市值</th><th>投入</th><th>達成率</th><th>較上月</th></tr></thead><tbody>'+rowsT+'</tbody></table></div></section>';
 }
 var SIM_R=[.08,.12,.18],SIM_C=[10000,20000,30000],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
-function simYm(n){return addMonths(SIM_START+'-01',n).slice(0,7)}
+function simYm(n){return addMonths(simStart()+'-01',n).slice(0,7)}
 function simPath(C,R,T,cap){var i=Math.pow(1+R,1/12)-1,v=0,pts=[0],n=0;while(v<T&&n<cap){v=v*(1+i)+C;n++;pts.push(v)}return {n:v>=T?n:null,pts:pts}}
 function renderSim(){
   var T=state.target,cap=600;
@@ -718,15 +738,15 @@ function renderSim(){
     if(p.n!=null)g+='<circle cx="'+X(p.n)+'" cy="'+Y(T)+'" r="3.5" fill="'+SIM_COL[k]+'"/>';
   });
   var me='填入月底價後，圖上會畫出你的實際位置。';
-  var ser=goalSeries().filter(function(r){return r.m>=SIM_START});
+  var S0=simStart(),ser=goalSeries().filter(function(r){return r.m>=S0});
   if(ser.length){
-    var off=function(m){return (+m.slice(0,4)-+SIM_START.slice(0,4))*12+(+m.slice(5,7)-+SIM_START.slice(5,7))+1};
+    var off=function(m){return (+m.slice(0,4)-+S0.slice(0,4))*12+(+m.slice(5,7)-+S0.slice(5,7))+1};
     var pts=[[X(0),Y(0)]].concat(ser.filter(function(r){return off(r.m)<=maxN}).map(function(r){return [X(off(r.m)),Y(r.val)]}));
     if(pts.length>1){g+='<path d="'+pts.map(function(q,i){return (i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)}).join(' ')+'" fill="none" stroke="#A78BFA" stroke-width="2.5"/>';var lp=pts[pts.length-1];g+='<circle cx="'+lp[0]+'" cy="'+lp[1]+'" r="4.5" fill="#A78BFA" stroke="#121A24" stroke-width="2"/>'}
     var L2=ser[ser.length-1];me='我的位置：'+roc(L2.m)+'底市值 '+n0(L2.val)+' 元（達成 '+(L2.val/T*100).toFixed(2)+'%）';
   }
   $('chartBody').innerHTML='<section class="card"><div class="rowb"><h2>達成 '+wan(T)+'需要多久</h2><span class="xs faint">試算，不是預測</span></div>'+
-    '<p class="note" style="margin-top:4px">自 115 年 9 月起每月固定投入，年化報酬固定，不含手續費與稅。</p>'+
+    '<p class="note" style="margin-top:4px">自 '+roc(simStart())+'起每月固定投入，年化報酬固定，不含手續費與稅。</p>'+
     '<div class="tw" style="margin-top:8px"><table><thead><tr><th>每月投入</th><th>8%</th><th>12%</th><th>18%</th></tr></thead><tbody>'+tbl+'</tbody></table></div></section>'+
     '<section class="card"><div class="seg soft" role="group" aria-label="每月投入金額" id="simSeg">'+SIM_C.map(function(C){return '<button type="button" data-c="'+C+'" aria-pressed="'+(C===ui.simC)+'">每月 '+(C/10000)+' 萬</button>'}).join('')+'</div>'+
     '<div class="svgw" style="margin-top:10px"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="每月投入 '+(ui.simC/10000)+' 萬的成長試算">'+g+'</svg></div>'+
@@ -742,6 +762,7 @@ $('cvSym').addEventListener('change',guard('標的',renderCv));
 
 /* ---------- 更多 ---------- */
 function renderMore(){
+  renderSyms();renderRules();
   document.querySelectorAll('.tgtTxt').forEach(function(e){e.textContent=wan(state.target)});
   if(document.activeElement!==$('target'))$('target').value=state.target;
   var x=state.idx||{};
@@ -798,6 +819,42 @@ $('target').addEventListener('change',guard('目標',function(){var v=Math.round
   if(k==='now'){if(v==='')delete state.idx.nowAt;else state.idx.nowAt=nowStamp()}
   scheduleSave();renderAll();
 }))});
+
+/* 我的標的 */
+function renderSyms(){
+  var h=holdingAt(null);
+  $('symList').innerHTML=SYMS.length?SYMS.map(function(x,i){
+    var held=h.held[x.c]>0;
+    return '<div'+(i===0?' style="border-top:none"':'')+'><div><span class="m" style="font-weight:600">'+esc(x.c)+'</span> <span class="small mute">'+esc(x.n||'')+'</span>'+(held?' <span class="tag">持有中</span>':'')+'</div><button type="button" class="tiny symDel" data-c="'+esc(x.c)+'">刪除</button></div>';
+  }).join(''):'<div style="border-top:none"><span class="small mute">還沒有標的，先在下面輸入股票代號。</span></div>';
+  document.querySelectorAll('#symList .symDel').forEach(function(b){armDelete(b,function(){
+    state.syms=state.syms.filter(function(x){return x.c!==b.dataset.c});setSyms(state.syms);scheduleSave();renderAll();toast('已從清單移除 '+b.dataset.c);
+  })});
+}
+$('symForm').addEventListener('submit',guard('新增標的',function(ev){
+  ev.preventDefault();
+  var c=$('symCode').value.trim().toUpperCase();
+  if(!/^[0-9A-Z]{4,6}$/.test(c)){$('symErr').textContent='代號是 4～6 碼的數字或英文，例如 0050、00685L。';return}
+  if(CODES.indexOf(c)>=0){$('symErr').textContent=c+' 已經在清單裡了。';return}
+  $('symErr').textContent='查詢中…';
+  getJson('/quote?codes='+encodeURIComponent(c)).then(function(j){
+    var name=(j.names&&j.names[c])||'',px=j.prices&&j.prices[c];
+    if(!name&&!px){$('symErr').textContent='證交所查不到 '+c+'，請確認代號。';return}
+    state.syms=(state.syms||[]).concat([{c:c,n:name}]);setSyms(state.syms);
+    $('symCode').value='';$('symErr').textContent='';scheduleSave();renderAll();toast('已新增 '+c+' '+name);fetchQuote();
+  }).catch(function(e){$('symErr').textContent='查詢失敗：'+((e&&e.message)||'連線失敗')+'。確認網路後再試。'});
+}));
+/* 我的投資紀律 */
+function renderRules(){
+  var r=state.rules||[];
+  $('ruleList').innerHTML=r.length?r.map(function(t){return '<li>'+esc(t)+'</li>'}).join(''):'<li style="list-style:none;margin-left:-20px" class="mute">還沒寫紀律。按「編輯」一行寫一條，例如「每月定期定額，不看盤」。</li>';
+}
+$('ruleEdit').addEventListener('click',guard('編輯紀律',function(){$('ruleText').value=(state.rules||[]).join('\n');$('ruleEditBox').hidden=false;$('ruleEdit').hidden=true;$('ruleText').focus()}));
+$('ruleCancel').addEventListener('click',function(){$('ruleEditBox').hidden=true;$('ruleEdit').hidden=false});
+$('ruleSave').addEventListener('click',guard('儲存紀律',function(){
+  state.rules=$('ruleText').value.split('\n').map(function(t){return t.trim()}).filter(Boolean).slice(0,20);
+  $('ruleEditBox').hidden=true;$('ruleEdit').hidden=false;scheduleSave();renderRules();toast('紀律已儲存');
+}));
 
 /* 備份與還原（格式與舊版相同） */
 function buildCsv(){
@@ -912,7 +969,7 @@ function fetchQuote(){
   if(qBusy)return Promise.resolve();qBusy=true;
   return getJson('/quote?codes='+encodeURIComponent(allCodes().join(','))).then(function(j){
     qErr='';
-    if(!j.date||!j.prices||!Object.keys(j.prices).length)return;
+    if(!j.date||!j.prices)return;
     var L={asOf:j.date,time:j.time||'',prices:j.prices,index:j.index||null};
     quotes.latest=L;
     var ym=j.date.slice(0,7),cur=quotes.monthEnd[ym];
