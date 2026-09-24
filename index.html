@@ -25,7 +25,9 @@
   --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
 }
 [hidden]{display:none!important}
-html,body{height:100%}
+html,body{height:100%;overflow-x:hidden;max-width:100%}
+body{overscroll-behavior-x:none}
+.app{overflow-x:hidden}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-tap-highlight-color:transparent}
 *,*::before,*::after{box-sizing:border-box}
 .m{font-family:var(--mono);font-variant-numeric:tabular-nums}
@@ -57,6 +59,7 @@ button{cursor:pointer}
 .tile dt{font-size:11px;color:var(--mute)} .tile dd{margin:2px 0 0;font-family:var(--mono);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .tile dd small{display:block;font-size:11px;font-weight:500}
 dl{margin:0}
+.list>div>div{min-width:0}
 .list>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
 .list>div:first-child{border-top:none}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);padding:4px;background:var(--s1);border:1px solid var(--line);border-radius:12px}
@@ -74,7 +77,7 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--mu
 .btn{min-height:50px;border:none;border-radius:14px;background:var(--acc);color:var(--accInk);font-size:16px;font-weight:700;width:100%}
 .btn2{min-height:44px;border:1px solid var(--line2);border-radius:10px;background:transparent;color:var(--ink);font-size:14px;padding:0 14px}
 .btn2.acc{background:var(--acc);border-color:var(--acc);color:var(--accInk);font-weight:700}
-.tiny{min-height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--line2);background:transparent;color:var(--mute);font-size:12px}
+.tiny{white-space:nowrap;flex-shrink:0;min-height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--line2);background:transparent;color:var(--mute);font-size:12px}
 .tiny.armed{background:var(--up);border-color:var(--up);color:#fff}
 .err{color:var(--up);font-size:13px;min-height:1em}
 .preview{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-radius:12px;background:var(--s2);border:1px dashed var(--line2)}
@@ -127,6 +130,11 @@ nav.tabbar button[aria-current="page"] .plus{box-shadow:0 0 0 4px rgba(34,211,23
 .login form{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
 :root{padding-top:env(safe-area-inset-top,0px)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+table{table-layout:auto}
+.tw table{min-width:0}
+.kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin-top:10px}
+.kv div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:8px 10px;background:var(--s2);border-radius:10px}
+.kv dt{font-size:12px;color:var(--mute)} .kv dd{margin:0;font-family:var(--mono);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -171,7 +179,7 @@ nav.tabbar button[aria-current="page"] .plus{box-shadow:0 0 0 4px rgba(34,211,23
       <div id="ixBody"></div>
     </section>
     <section class="card" aria-label="持有概況" style="padding-block:6px">
-      <div class="row" style="padding:10px 0 4px"><h2>持有概況</h2><span class="xs mute" id="qMeta"></span></div>
+      <div class="row" style="padding:10px 0 4px"><div><h2>持有概況</h2><div class="xs mute" id="qMeta"></div></div><button type="button" class="tiny" id="btnQuote" style="color:var(--acc);border-color:#1F4E58">更新報價</button></div>
       <div class="list" id="hHold"></div>
     </section>
   </section>
@@ -251,9 +259,9 @@ nav.tabbar button[aria-current="page"] .plus{box-shadow:0 0 0 4px rgba(34,211,23
   <section class="view" id="v-chart" aria-label="圖表" hidden>
     <div class="hd"><h1>圖表</h1><select class="inp sm" id="cvSym" aria-label="標的" style="width:auto"></select></div>
     <div class="seg soft" role="tablist" aria-label="圖表分類">
-      <button type="button" role="tab" data-t="cv" aria-selected="true">成本 vs 市值</button>
+      <button type="button" role="tab" data-t="cv" aria-selected="true">損益比</button>
       <button type="button" role="tab" data-t="goal" aria-selected="false">達成進度</button>
-      <button type="button" role="tab" data-t="sim" aria-selected="false">試算</button>
+      <button type="button" role="tab" data-t="sim" aria-selected="false">目標試算</button>
     </div>
     <div class="view" id="chartBody"></div>
   </section>
@@ -275,14 +283,12 @@ nav.tabbar button[aria-current="page"] .plus{box-shadow:0 0 0 4px rgba(34,211,23
     <section class="card" aria-label="自動報價">
       <div class="rowb"><h2>自動報價</h2><span class="small" id="qState"></span></div>
       <p class="note" style="margin-top:6px" id="qMsg"></p>
-      <div class="acts" style="margin-top:10px"><button type="button" class="btn2" id="btnQuote">立即更新報價</button></div>
     </section>
 
     <section class="card" aria-label="設定" style="padding-block:4px">
       <div class="setrow"><label for="target">目標市值（元）</label><input class="inp sm m" type="number" id="target" step="10000" min="1" inputmode="numeric" style="width:150px;text-align:right"></div>
-      <div class="setrow"><label for="ixHigh">大盤歷史高點</label><input class="inp sm m" type="number" id="ixHigh" step="0.01" min="0" inputmode="decimal" style="width:150px;text-align:right"></div>
-      <div class="setrow"><label for="ixDate">創高日期</label><input class="inp sm m" type="date" id="ixDate" style="width:170px"></div>
-      <div class="setrow"><label for="ixNow">大盤今日（手動）</label><input class="inp sm m" type="number" id="ixNow" step="0.01" min="0" inputmode="decimal" placeholder="有自動就免填" style="width:150px;text-align:right"></div>
+      <div class="setrow"><span>大盤近一年最高收盤</span><span class="m small" id="ixHighTxt">—</span></div>
+      <div class="setrow"><span>大盤最近收盤</span><span class="m small" id="ixNowTxt">—</span></div>
     </section>
 
     <details class="card" id="pxCard">
@@ -290,13 +296,9 @@ nav.tabbar button[aria-current="page"] .plus{box-shadow:0 0 0 4px rgba(34,211,23
       <div id="pxBody" style="margin-top:10px"></div>
     </details>
 
-    <details class="card" id="mpCard">
-      <summary><h2>月底價格</h2><span class="xs mute" style="margin-left:auto;margin-right:8px">空白＝用自動收盤價</span></summary>
-      <div id="mpBody" style="margin-top:10px;display:flex;flex-direction:column;gap:12px"></div>
-    </details>
 
     <section class="card" aria-labelledby="symH">
-      <div class="rowb"><h2 id="symH">我的標的</h2><span class="xs mute">記帳和報價都用這份清單</span></div>
+      <div class="rowb"><h2 id="symH">我的標的</h2><span class="xs mute"><span id="symCount">0</span> / 15 檔</span></div>
       <div class="list" id="symList" style="margin-top:6px"></div>
       <form id="symForm" autocomplete="off" novalidate style="display:flex;gap:8px;margin-top:10px;align-items:flex-end">
         <label class="f" style="flex:1">股票代號<input class="inp sm m" type="text" id="symCode" maxlength="6" placeholder="例如 0050" autocapitalize="characters"></label>
@@ -387,7 +389,7 @@ function toast(t){var el=$('toast');el.textContent=t;el.classList.add('on');clea
 function setStatus(t,kind){$('status').textContent=t;$('saveDot').className='dot'+(kind?' '+kind:'')}
 
 /* ---------- 儲存 ---------- */
-function payload(){return {entries:state.entries,prices:state.prices,checks:state.checks,income:state.income,mprices:state.mprices,backup:state.backup,target:state.target,idx:state.idx,priceAt:state.priceAt,qLatest:quotes.latest||null,qMonth:quotes.monthEnd||{},syms:state.syms||[],rules:state.rules||[]}}
+function payload(){return {entries:state.entries,prices:state.prices,checks:state.checks,income:state.income,mprices:state.mprices,backup:state.backup,target:state.target,idx:state.idx,priceAt:state.priceAt,qLatest:quotes.latest||null,qMonth:quotes.monthEnd||{},syms:state.syms||[],rules:state.rules||[],simWan:state.simWan||null,simRate:state.simRate||null,idxHist:state.idxHist||{},idxDone:state.idxDone||{}}}
 function scheduleSave(){dirty=true;setStatus('儲存中…','w');clearTimeout(saveTimer);saveTimer=setTimeout(doSave,500)}
 function doSave(){
   clearTimeout(saveTimer);
@@ -415,6 +417,7 @@ function adopt(d){
   state.syms=Array.isArray(d.syms)?thaw(d.syms,[]):(had?thaw(DEFAULT_SYMS,[]):[]);
   state.rules=Array.isArray(d.rules)?thaw(d.rules,[]):(had?DEFAULT_RULES.slice():[]);
   setSyms(state.syms);
+  state.simWan=d.simWan||null;state.simRate=d.simRate||null;state.idxHist=thaw(d.idxHist,{})||{};state.idxDone=thaw(d.idxDone,{})||{};
   if(d.qLatest&&(!quotes.latest||(d.qLatest.asOf||'')>(quotes.latest.asOf||'')))quotes.latest=thaw(d.qLatest,null);
   var qm=thaw(d.qMonth,{});Object.keys(qm).forEach(function(m){var a=quotes.monthEnd[m],b=qm[m];if(!a||(b.final&&!a.final)||(!a.final&&(b.asOf||'')>(a.asOf||'')))quotes.monthEnd[m]=b});
 }
@@ -432,8 +435,8 @@ function autoMonth(m,sym){var r=quotes.monthEnd&&quotes.monthEnd[m];var v=r&&r.p
 function manualMonth(m,sym){var v=state.mprices[m]?parseFloat(state.mprices[m][sym]):NaN;return isFinite(v)&&v>0?v:null}
 function monthPx(m,sym){
   if(m===curMonth()){var p=priceNow(sym);if(p.px!=null)return p.px}
-  var mm=manualMonth(m,sym);if(mm!=null)return mm;
-  return autoMonth(m,sym);
+  var am=autoMonth(m,sym);if(am!=null)return am;
+  return manualMonth(m,sym);
 }
 function holdingAt(m){var held={},cost={},tc=0;state.entries.forEach(function(e){if(m&&e.date>m+'-31')return;held[e.sym]=(held[e.sym]||0)+e.shares;cost[e.sym]=(cost[e.sym]||0)+amount(e);tc+=amount(e)});return {held:held,cost:cost,total:tc}}
 function monthList(){
@@ -485,29 +488,37 @@ function renderHome(){
   renderIdx();renderHold();
 }
 function idxNow(){
-  var L=quotes.latest,a=L&&L.index?parseFloat(L.index.close):NaN,m=parseFloat(state.idx.now),mAt=state.idx.nowAt||'';
-  if(isFinite(a)&&a>0&&(!(m>0)||autoStamp()>=mAt))return {v:a,src:'auto',at:L.asOf};
-  if(m>0)return {v:m,src:'manual',at:mAt.slice(0,10)};
-  return null;
+  var L=quotes.latest;if(!L||!L.index)return null;
+  // 盤中用前一交易日收盤；收盤後用當日收盤
+  if(marketOpen()&&L.asOf===today()){var pv=parseFloat(L.index.prev);return pv>0?{v:pv,label:'前一交易日收盤'}:null}
+  var c=parseFloat(L.index.close);return c>0?{v:c,label:md(L.asOf)+' 收盤',date:L.asOf}:null;
+}
+function idxHigh(){
+  var from=addMonths(today(),-12),best=null,h=state.idxHist||{};
+  Object.keys(h).forEach(function(d){if(d>=from&&h[d]>0&&(!best||h[d]>best.v))best={v:h[d],date:d}});
+  var nw=idxNow();if(nw&&nw.date&&nw.date>=from&&(!best||nw.v>best.v))best={v:nw.v,date:nw.date};
+  return best;
 }
 function renderIdx(){
-  var x=state.idx||{},hi=parseFloat(x.high),nw=idxNow();
-  if(!(hi>0)||!nw){$('ixMeta').textContent='';$('ixBody').innerHTML='<p class="note" style="margin-top:8px">到「更多」填入大盤歷史高點，就能看回檔幅度。'+(nw?'':'今日指數會由自動報價填入。')+'</p>';return}
-  var dd=(nw.v/hi-1)*100,p15=hi*.85,p25=hi*.75,st,c='down';
+  var hi=idxHigh(),nw=idxNow();
+  $('ixHighTxt').textContent=hi?n2(hi.v)+'（'+hi.date.replace(/-/g,'/')+'）':'抓取中…';
+  $('ixNowTxt').textContent=nw?n2(nw.v)+'（'+nw.label+'）':'—';
+  if(!hi||!nw){$('ixMeta').textContent='';$('ixBody').innerHTML='<p class="note" style="margin-top:8px">正在向證交所抓近一年的加權指數收盤價，第一次約需 20 秒。</p>';return}
+  var H=hi.v,dd=(nw.v/H-1)*100,p15=H*.85,p25=H*.75,st,c='down';
   if(dd<=-25)st='已回檔 25% 以上';
   else if(dd<=-15)st='已回檔 15% 以上';
-  else{st='距 −15% 加碼點還差 '+(dd+15).toFixed(1)+'%（'+n2(nw.v-p15)+' 點）';c=dd<0?'down':'up'}
-  $('ixMeta').innerHTML='高點 <span class="m">'+n0(hi)+'</span> · '+(nw.src==='auto'?'收盤 ':'今日 ')+'<span class="m">'+n2(nw.v)+'</span>';
+  else{st='距 −15% 加碼點還差 '+(dd+15).toFixed(1)+'%（'+n0(nw.v-p15)+' 點）';c=dd<0?'down':'up'}
+  $('ixMeta').innerHTML='近一年高點 <span class="m">'+n0(H)+'</span> · '+esc(nw.label)+' <span class="m">'+n0(nw.v)+'</span>';
   var fill=Math.max(0,Math.min(100,-dd/30*100));
   $('ixBody').innerHTML='<div style="display:flex;align-items:baseline;gap:8px;margin-top:8px;flex-wrap:wrap"><span class="m '+c+'" style="font-size:26px;font-weight:600">'+sign(dd)+Math.abs(dd).toFixed(1)+'%</span><span class="small mute">'+esc(st)+'</span></div>'+
     '<div class="gauge" role="img" aria-label="回檔 '+dd.toFixed(1)+'%"><div class="tr"></div><div class="fl" style="width:'+fill+'%;background:'+(dd<=-15?'var(--up)':'var(--down)')+'"></div>'+
     '<div class="mk" style="left:50%;background:var(--warn)"></div><div class="mk" style="left:83.3%;background:var(--up)"></div>'+
-    '<span class="ml" style="left:50%;color:var(--warn)">−15% '+n0(p15)+'</span><span class="ml" style="left:83.3%;color:var(--up)">−25% '+n0(p25)+'</span></div>'+
-    '<p class="note xs" style="margin-top:4px">量尺 0 到 −30%'+(x.date?' · 創高 '+esc(x.date):'')+(nw.src==='auto'?' · 自動 '+md(nw.at):' · 手動 '+md(nw.at))+'</p>';
+    '<span class="ml" style="left:50%;color:var(--warn)">−15% '+n0(p15)+'</span><span class="ml" style="left:80%;color:var(--up)">−25% '+n0(p25)+'</span></div>'+
+    '<p class="note xs" style="margin-top:4px">量尺 0 到 −30% · 高點日 '+hi.date.replace(/-/g,'/')+' · 全部用收盤價計算</p>';
 }
 function renderHold(){
   var L=quotes.latest;
-  $('qMeta').textContent=L&&L.asOf?'自動報價 '+md(L.asOf)+' 收盤':'尚無自動報價';
+  $('qMeta').textContent=L&&L.asOf?((marketOpen()&&L.asOf===today()?'盤中 ':'收盤 ')+md(L.asOf)+' '+(L.time||'').slice(0,5)):'尚無報價';
   var codes=heldCodes();
   if(!codes.length){$('hHold').innerHTML='<div><span class="small mute">還沒有資料。從舊版搬家：到「更多」→「從備份還原」選舊版下載的 JSON 檔；或按下方「＋」記第一筆。</span></div>';return}
   var h=holdingAt(null);
@@ -675,7 +686,7 @@ function renderCv(){
   rows.forEach(function(r){maxV=Math.max(maxV,r.cost,r.mkt)});var top=niceMax(maxV);
   function X(i){return n===1?L+iw/2:L+iw*i/(n-1)}function Y(v){return T+ih-ih*v/top}
   var g='';for(var k=0;k<=4;k++){var v=top*k/4,y=Y(v);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="'+(k?'#1F2A37':'#2C3A4A')+'"/><text x="'+(L-6)+'" y="'+(y+3)+'" text-anchor="end">'+yfmt(v)+'</text>'}
-  var step=Math.max(1,Math.ceil(n/6));rows.forEach(function(r,i){if(i%step===0||i===n-1)g+='<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle">'+rocS(r.m)+'</text>'});
+  var step=Math.max(1,Math.ceil(n/6));rows.forEach(function(r,i){if(i%step===0||i===n-1)g+='<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="'+(n>1&&i===n-1?'end':(n>1&&i===0?'start':'middle'))+'">'+rocS(r.m)+'</text>'});
   function path(key){return rows.map(function(r,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(r[key]).toFixed(1)}).join(' ')}
   if(n>1)g+='<path d="'+path('mkt')+' L'+X(n-1).toFixed(1)+' '+Y(0)+' L'+X(0).toFixed(1)+' '+Y(0)+' Z" fill="rgba(34,211,238,.08)"/><path d="'+path('cost')+'" fill="none" stroke="#F5B83D" stroke-width="2" stroke-dasharray="5 4"/><path d="'+path('mkt')+'" fill="none" stroke="#22D3EE" stroke-width="2.5"/>';
   rows.forEach(function(r,i){var last=i===n-1;g+='<circle cx="'+X(i)+'" cy="'+Y(r.mkt)+'" r="'+(last?4:2.5)+'" fill="#22D3EE" stroke="#121A24" stroke-width="'+(last?2:0)+'"><title>'+r.m+' 市值 '+n0(r.mkt)+'</title></circle>';if(n===1)g+='<circle cx="'+X(i)+'" cy="'+Y(r.cost)+'" r="3" fill="#F5B83D"/>'});
@@ -690,19 +701,22 @@ function renderCv(){
   }).join('');
   $('chartBody').innerHTML='<section class="card"><div class="leg"><span><i style="border-color:#F5B83D;border-top-style:dashed"></i>累計投入</span><span><i style="border-color:#22D3EE"></i>持股市值</span></div>'+
     '<div class="svgw" style="margin-top:8px"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="累計投入與市值曲線">'+g+'</svg></div>'+
-    '<div class="rowb" style="margin-top:6px;padding-top:10px;border-top:1px solid var(--line)"><span class="small mute">'+rocS(Lr.m)+' 市值 / 投入</span><span class="m small">'+n0(Lr.mkt)+' / '+n0(Lr.cost)+' <span class="'+cls(pl)+'">'+(rt==null?'':sign(rt)+Math.abs(rt).toFixed(2)+'%')+'</span></span></div>'+
+    '<div style="margin-top:8px;padding-top:10px;border-top:1px solid var(--line)"><div class="small mute m">'+rocS(Lr.m)+'</div><dl class="kv">'+
+      '<div><dt>持倉市值</dt><dd>'+n0(Lr.mkt)+'</dd></div><div><dt>投入成本</dt><dd>'+n0(Lr.cost)+'</dd></div>'+
+      '<div><dt>'+(pl<0?'虧損':'獲利')+'</dt><dd class="'+cls(pl)+'">'+(rt==null?'—':Math.abs(rt).toFixed(2)+'%')+'</dd></div>'+
+      '<div><dt>'+(pl<0?'虧損金額':'獲利金額')+'</dt><dd class="'+cls(pl)+'">'+n0(Math.abs(pl))+'</dd></div></dl></div>'+
     (notes.length?'<p class="note" style="margin-top:8px">'+notes.join(' ')+'</p>':'')+'</section>'+
-    '<section class="card"><h2 style="margin-bottom:6px">每月數字</h2><p class="note">點月份看當月底各標的持有快照。</p><div class="tw"><table><thead><tr><th>月底</th><th>投入</th><th>市值</th><th>損益</th><th>報酬率</th></tr></thead><tbody id="cvTbl">'+tbl+'</tbody></table></div></section>';
+    '<section class="card"><h2 style="margin-bottom:6px">每月結算損益</h2><p class="note">點月份看當月底各標的持有快照。</p><div class="tw"><table><thead><tr><th>月底</th><th>投入</th><th>市值</th><th>損益</th><th>報酬率</th></tr></thead><tbody id="cvTbl">'+tbl+'</tbody></table></div></section>';
   document.querySelectorAll('#cvTbl tr.click').forEach(function(tr){var f=guard('展開',function(){ui.expSnap[tr.dataset.m]=!ui.expSnap[tr.dataset.m];renderCv()});tr.addEventListener('click',f);tr.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}})});
 }
 function renderGoal(){
   var ser=goalSeries(),T=state.target;
   if(!ser.length){$('chartBody').innerHTML='<div class="empty">'+(state.entries.length?'還沒有任何月份湊齊價格。自動報價跑過一次後就會出現。':'還沒有買進紀錄。')+'</div>';return}
   var L=ser[ser.length-1],pct=L.val/T*100;
-  var miles=[[25,'四分之一'],[50,'一半'],[75,'四分之三'],[100,'目標達成']].map(function(x){
-    var th=T*x[0]/100,hit=null;for(var i=0;i<ser.length;i++)if(ser[i].val>=th){hit=ser[i].m;break}
-    var st=hit?(L.val>=th?'<span class="up">已達成</span>':'曾達成，目前低於'):'差 '+n0(th-L.val);
-    return '<tr><td>'+x[0]+'%（'+x[1]+'）</td><td>'+wan(th)+'</td><td>'+(hit?rocS(hit):'—')+'</td><td>'+st+'</td></tr>'}).join('');
+  var miles=[25,50,75,100].map(function(x){
+    var th=T*x/100,hit=null;for(var i=0;i<ser.length;i++)if(ser[i].val>=th){hit=ser[i].m;break}
+    var pj=L.val>=th?'<span class="up">已達成</span>':projectDate(L.val,th);
+    return '<tr><td>'+x+'%</td><td>'+wan(th)+'</td><td>'+(hit?monthEndDate(hit):'—')+'</td><td>'+pj+'</td></tr>'}).join('');
   var show=ser.slice(-12),W=340,H=170,Lx=34,R=8,Tp=10,B=24,iw=W-Lx-R,ih=H-Tp-B,n=show.length,maxP=0;
   show.forEach(function(r){maxP=Math.max(maxP,r.val/T*100)});maxP=maxP<=5?5:maxP<=10?10:maxP<=25?25:Math.ceil(maxP/25)*25;
   function Y(p){return Tp+ih-ih*Math.min(p,maxP)/maxP}
@@ -712,26 +726,41 @@ function renderGoal(){
   var rowsT=ser.slice().reverse().map(function(r,i,a){var p=r.val/T*100,pv=a[i+1],d=pv?p-pv.val/T*100:null;return '<tr><td>'+rocS(r.m)+'</td><td>'+n0(r.val)+'</td><td>'+n0(r.cost)+'</td><td>'+p.toFixed(2)+'%</td><td class="'+cls(d)+'">'+(d==null?'—':sign(d)+Math.abs(d).toFixed(2))+'</td></tr>'}).join('');
   $('chartBody').innerHTML='<section class="card"><div class="rowb"><span class="small mute">截至 '+roc(L.m)+'底</span><span class="small mute">目標 '+wan(T)+'</span></div>'+
     '<div style="display:flex;align-items:baseline;gap:8px;margin:10px 0"><span class="big" style="font-size:38px">'+(pct<10?pct.toFixed(2):pct.toFixed(1))+'%</span><span class="small mute">月底市值 <span class="m" style="color:var(--ink)">'+n0(L.val)+'</span></span></div>'+
-    '<div class="svgw"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="每月底達成率">'+g+'</svg></div>'+(ser.length>12?'<p class="note">圖表顯示最近 12 個月，完整數字見下表。</p>':'')+'</section>'+
-    '<section class="card"><h2 style="margin-bottom:6px">里程碑</h2><div class="tw"><table><thead><tr><th>里程碑</th><th>門檻</th><th>首次</th><th>狀態</th></tr></thead><tbody>'+miles+'</tbody></table></div></section>'+
-    '<section class="card"><h2 style="margin-bottom:6px">每月底達成率</h2><div class="tw"><table><thead><tr><th>月底</th><th>市值</th><th>投入</th><th>達成率</th><th>較上月</th></tr></thead><tbody>'+rowsT+'</tbody></table></div></section>';
+    '<div class="svgw"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="每月達成率">'+g+'</svg></div>'+(ser.length>12?'<p class="note">圖表顯示最近 12 個月，完整數字見下表。</p>':'')+'</section>'+
+    '<section class="card"><h2 style="margin-bottom:6px">里程碑</h2><div class="tw"><table><thead><tr><th>里程碑</th><th>門檻</th><th>首次達成日</th><th>預計達成日</th></tr></thead><tbody>'+miles+'</tbody></table></div><p class="note" style="margin-top:8px">預計達成日依「目標試算」：每月投入 '+fmtWan(simC())+' 萬、年化 '+(simRate()*100)+'%，從目前市值往後推算，是試算不是預測。</p></section>'+
+    '<section class="card"><h2 style="margin-bottom:6px">每月達成率</h2><div class="tw"><table><thead><tr><th>月底</th><th>市值</th><th>投入</th><th>達成率</th><th>較上月</th></tr></thead><tbody>'+rowsT+'</tbody></table></div></section>';
 }
-var SIM_R=[.08,.12,.18],SIM_C=[10000,20000,30000],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
+var SIM_R=[.08,.12,.18],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
+function fmtWan(v){return (Math.round(v/1000)/10).toLocaleString('zh-TW',{maximumFractionDigits:1})}
+function avg12(){var ms=monthList();if(!ms.length)return 30000;ms=ms.slice(-12);var t=0;ms.forEach(function(m){t+=monthInvest(m)});return t/ms.length}
+function simC(){var w=parseFloat(state.simWan);if(w>0)return w*10000;var a=avg12();return a>0?Math.round(a/1000)*1000:30000}
+function simRate(){var r=parseFloat(state.simRate);return SIM_R.indexOf(r)>=0?r:.12}
+function fmtD(d){return d.getFullYear()+'/'+pad(d.getMonth()+1)+'/'+pad(d.getDate())}
+function monthEndDate(m){
+  var r=quotes.monthEnd&&quotes.monthEnd[m];if(r&&r.asOf&&(r.final||m<curMonth()))return r.asOf.replace(/-/g,'/');
+  if(m===curMonth()&&quotes.latest&&quotes.latest.asOf)return quotes.latest.asOf.replace(/-/g,'/');
+  var d=new Date(+m.slice(0,4),+m.slice(5,7),0);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()-1);return fmtD(d);
+}
+function projectDate(v0,th){
+  var C=simC(),i=Math.pow(1+simRate(),1/12)-1,v=v0,k=0;
+  while(v<th&&k<600){var pv=v;v=v*(1+i)+C;k++;if(v>=th){var f=(th-pv)/(v-pv),d=new Date();d.setMonth(d.getMonth()+k-1);d.setDate(d.getDate()+Math.round(f*30.44));return '約 '+fmtD(d)}}
+  return '50 年以上';
+}
 function simYm(n){return addMonths(simStart()+'-01',n).slice(0,7)}
 function simPath(C,R,T,cap){var i=Math.pow(1+R,1/12)-1,v=0,pts=[0],n=0;while(v<T&&n<cap){v=v*(1+i)+C;n++;pts.push(v)}return {n:v>=T?n:null,pts:pts}}
 function renderSim(){
-  var T=state.target,cap=600;
-  var tbl=SIM_C.map(function(C){return '<tr class="'+(C===ui.simC?'sel':'')+'"><td>'+(C/10000)+' 萬</td>'+SIM_R.map(function(R){var r=simPath(C,R,T,cap);return '<td class="m">'+(r.n==null?'—':(r.n/12).toFixed(1)+' 年<div class="xs faint">約 '+rocS(simYm(r.n))+'</div>')+'</td>'}).join('')+'</tr>'}).join('');
-  var paths=SIM_R.map(function(R){return simPath(ui.simC,R,T,cap)}),maxN=0;paths.forEach(function(p){maxN=Math.max(maxN,p.n==null?cap:p.n)});
+  var T=state.target,cap=600,C=simC();
+  var tbl='<tr class="sel"><td>'+fmtWan(C)+' 萬</td>'+SIM_R.map(function(R){var r=simPath(C,R,T,cap);return '<td class="m">'+(r.n==null?'—':(r.n/12).toFixed(1)+' 年<div class="xs faint">約 '+rocS(simYm(r.n))+'</div>')+'</td>'}).join('')+'</tr>';
+  var paths=SIM_R.map(function(R){return simPath(C,R,T,cap)}),maxN=0;paths.forEach(function(p){maxN=Math.max(maxN,p.n==null?cap:p.n)});
   var W=340,H=220,L=40,Rr=10,Tp=14,B=26,iw=W-L-Rr,ih=H-Tp-B,top=T*1.12;
   function X(n){return L+iw*n/maxN}function Y(v){return Tp+ih-ih*Math.min(v,top)/top}
   var g='';[0,.25,.5,.75,1].forEach(function(f){var y=Y(T*f);g+='<line x1="'+L+'" x2="'+(L+iw)+'" y1="'+y+'" y2="'+y+'" stroke="#1F2A37"/><text x="'+(L-4)+'" y="'+(y+3)+'" text-anchor="end">'+(T*f/10000).toFixed(0)+'萬</text>'});
   var ys=maxN>120?2:1;for(var yy=0;yy*12<=maxN;yy+=ys)g+='<text x="'+X(yy*12)+'" y="'+(H-8)+'" text-anchor="middle">'+(+simYm(yy*12).slice(0,4)-1911)+'</text>';
   g+='<line x1="'+L+'" x2="'+(L+iw)+'" y1="'+Y(T)+'" y2="'+Y(T)+'" stroke="#E6EDF3" stroke-dasharray="6 4"/><text x="'+(L+4)+'" y="'+(Y(T)-5)+'" style="fill:#E6EDF3">目標 '+wan(T)+'</text>';
-  if(ui.simPr){var pn=paths.reduce(function(a,p){return Math.max(a,p.pts.length-1)},0),dp='';for(var q=0;q<=pn;q+=Math.max(1,Math.floor(pn/120)))dp+=(q?'L':'M')+X(q).toFixed(1)+' '+Y(ui.simC*q).toFixed(1);g+='<path d="'+dp+'" fill="none" stroke="#6B7A8C" stroke-width="1.5" stroke-dasharray="6 5"/>'}
+  if(ui.simPr){var pn=paths.reduce(function(a,p){return Math.max(a,p.pts.length-1)},0),dp='';for(var q=0;q<=pn;q+=Math.max(1,Math.floor(pn/120)))dp+=(q?'L':'M')+X(q).toFixed(1)+' '+Y(C*q).toFixed(1);g+='<path d="'+dp+'" fill="none" stroke="#6B7A8C" stroke-width="1.5" stroke-dasharray="6 5"/>'}
   paths.forEach(function(p,k){
     var st=Math.max(1,Math.floor(p.pts.length/120)),d='',d2='';
-    for(var i=0;i<p.pts.length;i+=st){d+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.pts[i]).toFixed(1);d2+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(Math.max(0,p.pts[i]-ui.simC*i)).toFixed(1)}
+    for(var i=0;i<p.pts.length;i+=st){d+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.pts[i]).toFixed(1);d2+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(Math.max(0,p.pts[i]-C*i)).toFixed(1)}
     var ln=p.pts.length-1;d+='L'+X(ln).toFixed(1)+' '+Y(p.pts[ln]).toFixed(1);
     if(ui.simGn)g+='<path d="'+d2+'" fill="none" stroke="'+SIM_COL[k]+'" stroke-width="1.5" stroke-dasharray="2 4" opacity=".8"/>';
     g+='<path d="'+d+'" fill="none" stroke="'+SIM_COL[k]+'" stroke-width="2.2"/>';
@@ -748,12 +777,15 @@ function renderSim(){
   $('chartBody').innerHTML='<section class="card"><div class="rowb"><h2>達成 '+wan(T)+'需要多久</h2><span class="xs faint">試算，不是預測</span></div>'+
     '<p class="note" style="margin-top:4px">自 '+roc(simStart())+'起每月固定投入，年化報酬固定，不含手續費與稅。</p>'+
     '<div class="tw" style="margin-top:8px"><table><thead><tr><th>每月投入</th><th>8%</th><th>12%</th><th>18%</th></tr></thead><tbody>'+tbl+'</tbody></table></div></section>'+
-    '<section class="card"><div class="seg soft" role="group" aria-label="每月投入金額" id="simSeg">'+SIM_C.map(function(C){return '<button type="button" data-c="'+C+'" aria-pressed="'+(C===ui.simC)+'">每月 '+(C/10000)+' 萬</button>'}).join('')+'</div>'+
-    '<div class="svgw" style="margin-top:10px"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="每月投入 '+(ui.simC/10000)+' 萬的成長試算">'+g+'</svg></div>'+
+    '<section class="card"><div class="row" style="align-items:flex-end"><label class="f" style="flex:1">每月投入（萬）<input class="inp m" type="number" id="simWan" step="0.1" min="0.1" inputmode="decimal" value="'+fmtWan(C).replace(/,/g,'')+'"></label>'+
+    '<div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--mute)">預計達成日用<div class="seg soft" role="group" aria-label="預計達成日採用的年化報酬" id="simRateSeg">'+SIM_R.map(function(R){return '<button type="button" data-r="'+R+'" aria-pressed="'+(R===simRate())+'" style="min-height:40px;padding:0 10px">'+(R*100)+'%</button>'}).join('')+'</div></div></div>'+
+    (parseFloat(state.simWan)>0?'':'<p class="note" style="margin-top:6px">預設帶入近 12 個月平均每月投入，改過會記住。</p>')+
+    '<div class="svgw" style="margin-top:10px"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="每月投入 '+fmtWan(C)+' 萬的成長試算">'+g+'</svg></div>'+
     '<div class="leg">'+SIM_R.map(function(R,k){var p=paths[k];return '<span><i style="border-color:'+SIM_COL[k]+'"></i>'+(R*100)+'% '+(p.n==null?'50 年以上':rocS(simYm(p.n)))+'</span>'}).join('')+'<span><i style="border-color:#A78BFA"></i>我的位置</span></div>'+
     '<div class="acts" style="margin-top:10px"><label class="small mute" style="display:flex;align-items:center;gap:6px;min-height:36px"><input type="checkbox" id="simPr"'+(ui.simPr?' checked':'')+'> 顯示投入本金</label><label class="small mute" style="display:flex;align-items:center;gap:6px;min-height:36px"><input type="checkbox" id="simGn"'+(ui.simGn?' checked':'')+'> 顯示獲利</label></div>'+
     '<p class="note" style="margin-top:4px">'+esc(me)+'</p></section>';
-  document.querySelectorAll('#simSeg button').forEach(function(b){b.addEventListener('click',guard('試算',function(){ui.simC=+b.dataset.c;keepUi();renderSim()}))});
+  $('simWan').addEventListener('change',guard('試算',function(){var v=parseFloat(this.value);if(v>0&&v<=10000){state.simWan=Math.round(v*10)/10;scheduleSave()}renderSim()}));
+  document.querySelectorAll('#simRateSeg button').forEach(function(b){b.addEventListener('click',guard('試算',function(){state.simRate=+b.dataset.r;scheduleSave();renderSim()}))});
   $('simPr').addEventListener('change',function(){ui.simPr=this.checked;renderSim()});
   $('simGn').addEventListener('change',function(){ui.simGn=this.checked;renderSim()});
 }
@@ -765,20 +797,16 @@ function renderMore(){
   renderSyms();renderRules();
   document.querySelectorAll('.tgtTxt').forEach(function(e){e.textContent=wan(state.target)});
   if(document.activeElement!==$('target'))$('target').value=state.target;
-  var x=state.idx||{};
-  if(document.activeElement!==$('ixHigh'))$('ixHigh').value=x.high==null?'':x.high;
-  if(document.activeElement!==$('ixDate'))$('ixDate').value=x.date||'';
-  if(document.activeElement!==$('ixNow'))$('ixNow').value=x.now==null?'':x.now;
+  renderIdx();
   renderBackup();renderQuoteState();
   if($('pxCard').open)renderPx();
-  if($('mpCard').open)renderMp();
 }
 function renderQuoteState(){
   var L=quotes.latest;
   if(!L||!L.asOf){$('qState').innerHTML='<span class="warn">尚未收到</span>';$('qMsg').textContent=qErr?'抓不到報價：'+qErr:'打開 App 就會向證交所抓報價；月底價會自動補抓當月最後一個交易日的收盤價。';return}
   var days=Math.round((new Date(today())-new Date(L.asOf))/864e5),late=days>4||!!qErr;
   $('qState').innerHTML=qErr?'<span class="up">更新失敗</span>':late?'<span class="up">'+days+' 天未更新</span>':'<span class="down">'+(marketOpen()?'盤中更新中':'正常')+'</span>';
-  $('qMsg').textContent='最近一次：'+L.asOf+' '+(L.time||'').slice(0,5)+(qErr?'。上次更新失敗：'+qErr:'')+'。盤中（週一到週五 9:00–13:30）App 開著時每 20 秒更新一次，收盤後的價格就是當天收盤價。';
+  $('qMsg').textContent='最近一次：'+L.asOf+' '+(L.time||'').slice(0,5)+(qErr?'。上次更新失敗：'+qErr:'')+'。盤中（週一到週五 9:00–13:30）App 開著時每 20 秒更新；收盤後只抓一次收盤價，之後不再重抓，週末也不抓，避免浪費免費額度。月底價會自動補抓當月最後一個交易日的收盤價。';
 }
 function renderPx(){
   var codes=heldCodes();
@@ -794,34 +822,12 @@ function renderPx(){
     scheduleSave();renderAll();toast(v===''?'已清除手動價':'已改用手動價 '+v);
   }))});
 }
-function renderMp(){
-  var ms=monthList().slice().reverse(),codes=heldCodes();
-  if(!ms.length){$('mpBody').innerHTML='<p class="note">有買進紀錄之後，這裡會列出每個月份。</p>';return}
-  $('mpBody').innerHTML=ms.map(function(m){
-    var h=holdingAt(m),cs=codes.filter(function(c){return h.held[c]>0});if(!cs.length)return '';
-    var r=quotes.monthEnd&&quotes.monthEnd[m];
-    return '<div><div class="rowb small" style="margin-bottom:6px"><b>'+roc(m)+'</b><span class="xs faint">'+(r&&r.asOf?'自動價日期 '+md(r.asOf):'無自動價')+'</span></div><div class="grid2">'+cs.map(function(c){
-      var a=autoMonth(m,c),v=state.mprices[m]&&state.mprices[m][c];
-      return '<label class="f"><span class="m">'+esc(c)+'</span><input class="inp sm m mp" type="number" step="0.01" min="0" inputmode="decimal" data-m="'+m+'" data-sym="'+esc(c)+'" placeholder="'+(a!=null?n2(a)+'（自動）':'未有價格')+'" value="'+(v==null?'':v)+'"></label>'}).join('')+'</div></div>';
-  }).join('');
-  document.querySelectorAll('#mpBody input.mp').forEach(function(i){i.addEventListener('change',guard('月底價',function(){
-    var m=i.dataset.m,s=i.dataset.sym,v=i.value.trim();state.mprices[m]=state.mprices[m]||{};
-    if(v==='')delete state.mprices[m][s];else state.mprices[m][s]=parseFloat(v);
-    scheduleSave();renderAll();
-  }))});
-}
-$('pxCard').addEventListener('toggle',guard('現價',function(){if($('pxCard').open)renderPx()}));
-$('mpCard').addEventListener('toggle',guard('月底價',function(){if($('mpCard').open)renderMp()}));
 $('target').addEventListener('change',guard('目標',function(){var v=Math.round(parseFloat($('target').value));if(isFinite(v)&&v>0){state.target=v;scheduleSave();renderAll();toast('目標改為 '+wan(v))}else $('target').value=state.target}));
-['ixHigh','ixDate','ixNow'].forEach(function(id){$(id).addEventListener('change',guard('大盤',function(){
-  var k={ixHigh:'high',ixDate:'date',ixNow:'now'}[id],v=$(id).value.trim();state.idx=state.idx||{};
-  if(v==='')delete state.idx[k];else state.idx[k]=k==='date'?v:parseFloat(v);
-  if(k==='now'){if(v==='')delete state.idx.nowAt;else state.idx.nowAt=nowStamp()}
-  scheduleSave();renderAll();
-}))});
+$('pxCard').addEventListener('toggle',guard('現價',function(){if($('pxCard').open)renderPx()}));
 
 /* 我的標的 */
 function renderSyms(){
+  $('symCount').textContent=SYMS.length;
   var h=holdingAt(null);
   $('symList').innerHTML=SYMS.length?SYMS.map(function(x,i){
     var held=h.held[x.c]>0;
@@ -836,6 +842,7 @@ $('symForm').addEventListener('submit',guard('新增標的',function(ev){
   var c=$('symCode').value.trim().toUpperCase();
   if(!/^[0-9A-Z]{4,6}$/.test(c)){$('symErr').textContent='代號是 4～6 碼的數字或英文，例如 0050、00685L。';return}
   if(CODES.indexOf(c)>=0){$('symErr').textContent=c+' 已經在清單裡了。';return}
+  if(CODES.length>=15){$('symErr').textContent='最多 15 檔，請先刪除不需要的標的。';return}
   $('symErr').textContent='查詢中…';
   getJson('/quote?codes='+encodeURIComponent(c)).then(function(j){
     var name=(j.names&&j.names[c])||'',px=j.prices&&j.prices[c];
@@ -945,10 +952,6 @@ function renderAll(){renderView()}
 document.querySelectorAll('nav.tabbar button').forEach(function(b){b.addEventListener('click',guard('切換頁面',function(){show(b.dataset.v)}))});
 
 /* ---------- 自動報價：大盤創高時自動更新高點 ---------- */
-function checkNewHigh(){
-  if(!loaded)return;var nw=idxNow(),hi=parseFloat(state.idx.high);
-  if(nw&&nw.src==='auto'&&hi>0&&nw.v>hi){state.idx.high=nw.v;state.idx.date=nw.at;scheduleSave();toast('大盤收盤創新高，已更新歷史高點')}
-}
 
 /* ---------- 啟動 ---------- */
 $('fDate').value=today();$('iMonth').value=curMonth();
@@ -958,6 +961,19 @@ show(ui.view);
 var qErr='', qBusy=false, qTimer=null, lastPersist='';
 function tpeNow(){var d=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Taipei'}));return {dow:d.getDay(),hm:pad(d.getHours())+':'+pad(d.getMinutes())}}
 function marketOpen(){var t=tpeNow();return t.dow>=1&&t.dow<=5&&t.hm>='09:00'&&t.hm<'13:35'}
+function tpeDate(offsetDays){var d=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Taipei'}));if(offsetDays)d.setDate(d.getDate()+offsetDays);return d}
+function tpeStamp(){var d=tpeDate();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
+// 最近一次「收盤後」的時間點（週一到週五 13:35）；在這之後抓過就不用再抓
+function lastCloseMoment(){
+  for(var k=0;k<7;k++){var d=tpeDate(-k),dow=d.getDay();if(dow===0||dow===6)continue;
+    var st=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' 13:35';if(st<=tpeStamp())return st}
+  return '';
+}
+var lastFetchAt='';try{lastFetchAt=localStorage.getItem('dca-last-fetch')||''}catch(e){}
+function quoteIsFresh(){
+  if(marketOpen())return Date.now()-(window.__lastPoll||0)<15000;   // 盤中最快 15 秒一次
+  return !!quotes.latest&&lastFetchAt>=lastCloseMoment();           // 收盤後抓過一次就不再抓
+}
 function workerUrl(){var c=window.APP_CONFIG||{};return (c.workerUrl||'').replace(/\/+$/,'')}
 function getJson(path){
   var base=workerUrl();
@@ -966,19 +982,20 @@ function getJson(path){
   return fetch(base+path,{signal:ctl.signal,cache:'no-store'}).then(function(r){clearTimeout(t);if(!r.ok)throw new Error('轉接程式回應 '+r.status);return r.json()}).then(function(j){if(!j||j.ok===false)throw new Error((j&&j.error)||'報價格式不對');return j});
 }
 function fetchQuote(){
-  if(qBusy)return Promise.resolve();qBusy=true;
+  if(qBusy||quoteIsFresh())return Promise.resolve(false);qBusy=true;window.__lastPoll=Date.now();
   return getJson('/quote?codes='+encodeURIComponent(allCodes().join(','))).then(function(j){
     qErr='';
     if(!j.date||!j.prices)return;
+    lastFetchAt=tpeStamp();try{localStorage.setItem('dca-last-fetch',lastFetchAt)}catch(e){}
     var L={asOf:j.date,time:j.time||'',prices:j.prices,index:j.index||null};
+    if(j.index&&j.index.close&&(j.time>='13:30'||!marketOpen())){state.idxHist=state.idxHist||{};state.idxHist[j.date]=j.index.close}
     quotes.latest=L;
     var ym=j.date.slice(0,7),cur=quotes.monthEnd[ym];
     if(!cur||!cur.final)quotes.monthEnd[ym]={asOf:j.date,time:j.time||'',prices:j.prices,index:j.index?j.index.close:null};
     // 盤中價只留在畫面上；收盤後（或換日）才寫回雲端，避免每 20 秒存一次
     var key=j.date+(j.time>='13:30'?'C':'');
     if((j.time>='13:30'||!marketOpen())&&key!==lastPersist){lastPersist=key;scheduleSave()}
-    checkNewHigh();
-  }).catch(function(e){qErr=(e&&e.name==='AbortError')?'連線逾時':((e&&e.message)||'連線失敗')}).then(function(){qBusy=false;renderAll()});
+  return true}).catch(function(e){qErr=(e&&e.name==='AbortError')?'連線逾時':((e&&e.message)||'連線失敗');return true}).then(function(r){qBusy=false;renderAll();return r});
 }
 function schedQuotes(){
   clearTimeout(qTimer);
@@ -986,7 +1003,26 @@ function schedQuotes(){
   qTimer=setTimeout(function(){fetchQuote().then(schedQuotes)},marketOpen()?20000:600000);
 }
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&loaded){fetchQuote().then(schedQuotes)}else clearTimeout(qTimer)});
-$('btnQuote').addEventListener('click',guard('更新報價',function(){fetchQuote().then(function(){toast(qErr?'更新失敗：'+qErr:'報價已更新')})}));
+$('btnQuote').addEventListener('click',guard('更新報價',function(){
+  if(quoteIsFresh()){toast(marketOpen()?'剛更新過，盤中每 20 秒會自動更新':'已是最新收盤價，收盤後價格不會變，不重抓');return}
+  fetchQuote().then(function(){toast(qErr?'更新失敗：'+qErr:'報價已更新')});
+}));
+
+/* 加權指數近一年收盤（算近一年高點）：過去月份只抓一次，當月每天收盤後補一次 */
+async function loadIdxHist(){
+  state.idxHist=state.idxHist||{};state.idxDone=state.idxDone||{};
+  var cm=curMonth(),m=addMonths(today(),-12).slice(0,7),list=[],changed=false;
+  while(m<=cm){list.push(m);m=addMonth(m)}
+  for(var i=0;i<list.length;i++){
+    var ym=list[i];
+    if(ym<cm&&state.idxDone[ym])continue;
+    if(ym===cm&&(marketOpen()||state.idxDone[ym]===today()))continue;
+    try{var j=await getJson('/indexMonth?ym='+ym.replace('-',''));Object.keys(j.days||{}).forEach(function(d){state.idxHist[d]=j.days[d]});state.idxDone[ym]=ym<cm?true:today();changed=true}catch(e){}
+    await sleep(1500);
+  }
+  var cut=addMonths(today(),-13);Object.keys(state.idxHist).forEach(function(d){if(d<cut)delete state.idxHist[d]});
+  if(changed){scheduleSave();renderAll()}
+}
 
 /* 補抓過去月份的正式月底收盤價（證交所個股日成交資訊） */
 function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
@@ -1036,7 +1072,7 @@ var unsub=null;
       if(dirty&&!first)return;                           // 本機還有未存的修改，以本機為準
       if(snap.exists)adopt(snap.data());
       setStatus(snap.metadata.fromCache?'離線中，連上網路後同步':(state.entries.length||state.income.length?'已同步雲端':'雲端・尚無資料'),snap.metadata.fromCache?'w':'');
-      if(first){first=false;loaded=true;renderAll();fetchQuote().then(function(){schedQuotes();return backfillMonths()})}
+      if(first){first=false;loaded=true;renderAll();fetchQuote().then(function(){schedQuotes();return backfillMonths()}).then(loadIdxHist)}
       else renderAll();
     },function(e){setStatus('雲端讀取失敗：'+(e&&e.code||''),'e')});
   });
