@@ -1,6 +1,6 @@
 // 離線外殼：先抓網路（拿到最新版），失敗才用快取。報價與 Firebase 不經過這裡的快取。
-const CACHE = 'dca-shell-v1';
-const SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
+const CACHE = 'dca-shell-v2';
+const SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'hodl-192.png', 'hodl-512.png', 'hodl-apple-180.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {

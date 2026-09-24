@@ -25,6 +25,9 @@
   --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
 }
 [hidden]{display:none!important}
+input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;display:block;text-align:left}
+input::-webkit-date-and-time-value{text-align:left}
+.grid2>*{min-width:0}
 html,body{height:100%;overflow-x:hidden;max-width:100%}
 body{overscroll-behavior-x:none}
 .app{overflow-x:hidden}
@@ -151,7 +154,7 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
 
 <div class="login" id="login" hidden>
   <form id="loginForm" novalidate>
-    <div><div class="eyebrow">退休金主動帳戶</div><h1 style="margin:2px 0 4px;font-size:24px">HODL</h1><p class="note">登入後，手機和電腦看到的是同一份資料。</p></div>
+    <div><div class="eyebrow">HODL主動帳戶</div><h1 style="margin:2px 0 4px;font-size:24px">HODL</h1><p class="note">登入後，手機和電腦看到的是同一份資料。</p></div>
     <label class="f">Email<input class="inp" type="email" id="lgEmail" autocomplete="username" inputmode="email"></label>
     <label class="f">密碼（至少 6 碼）<input class="inp" type="password" id="lgPass" autocomplete="current-password"></label>
     <div class="err" id="lgErr" aria-live="polite"></div>
@@ -167,11 +170,11 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
   <!-- 總覽 -->
   <section class="view" id="v-home" aria-label="總覽">
     <div class="hd">
-      <div><div class="eyebrow">退休金主動帳戶</div><h1>總覽</h1></div>
+      <div><div class="eyebrow">HODL主動帳戶</div><h1>總覽</h1></div>
       <span class="chip" id="saveChip"><span class="dot" id="saveDot"></span><span id="status">載入中…</span></span>
     </div>
     <section class="card" aria-label="目標達成進度">
-      <div class="rowb small mute"><span>累積市值目標 <span class="m" style="color:var(--ink)" id="hTarget">—</span></span><span id="hSrc"></span></div>
+      <div class="rowb small mute"><span>市值目標 <span class="m" style="color:var(--ink)" id="hTarget">—</span></span><span id="hSrc"></span></div>
       <div style="display:flex;align-items:baseline;gap:8px;margin:12px 0">
         <span class="big" id="hPct">—</span><span class="small mute">達成率</span>
       </div>
@@ -192,10 +195,10 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
 
   <!-- 記一筆 -->
   <section class="view" id="v-add" aria-label="記一筆" hidden>
-    <div class="hd"><h1>記一筆</h1><span class="small mute">只買不賣</span></div>
+    <div class="hd"><h1>記一筆</h1><span class="small" style="color:var(--up);font-weight:700">只買不賣</span></div>
     <div class="seg" role="group" aria-label="紀錄類型">
       <button type="button" id="addModeBuy" aria-pressed="true">買進</button>
-      <button type="button" id="addModeInc" aria-pressed="false">業外收入</button>
+      <button type="button" id="addModeInc" aria-pressed="false">收入</button>
     </div>
     <form id="buyForm" autocomplete="off" class="view" novalidate>
       <div style="display:flex;flex-direction:column;gap:6px">
@@ -206,9 +209,9 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
       <div style="display:flex;flex-direction:column;gap:6px">
         <span class="small mute" id="lblKind">類型</span>
         <div class="seg soft" role="group" aria-labelledby="lblKind" id="kindSeg">
+          <button type="button" data-k="extra" aria-pressed="false">手動買進</button>
           <button type="button" data-k="dca" aria-pressed="true">定期定額</button>
-          <button type="button" data-k="extra" aria-pressed="false">手動加碼</button>
-          <button type="button" data-k="reinvest" aria-pressed="false">股利再投入</button>
+          <button type="button" data-k="reinvest" aria-pressed="false">股利複投</button>
         </div>
       </div>
       <div class="grid2">
@@ -254,7 +257,7 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
     </div>
     <div class="seg soft" role="tablist" aria-label="紀錄分類">
       <button type="button" role="tab" data-t="buy" aria-selected="true">買進明細</button>
-      <button type="button" role="tab" data-t="inc" aria-selected="false">業外收入</button>
+      <button type="button" role="tab" data-t="inc" aria-selected="false">收入明細</button>
       <button type="button" role="tab" data-t="sum" aria-selected="false">每月合計</button>
     </div>
     <p class="note" id="recCount"></p>
@@ -292,7 +295,7 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
     </section>
 
     <section class="card" aria-label="設定" style="padding-block:4px">
-      <div class="setrow"><label for="target" style="white-space:nowrap">累積市值目標（元）</label><input class="inp sm m" type="number" id="target" step="10000" min="1" inputmode="numeric" style="width:150px;text-align:right"></div>
+      <div class="setrow"><label for="target" style="white-space:nowrap">HODL目標（萬）</label><input class="inp sm m" type="number" id="target" step="1" min="1" inputmode="decimal" style="width:96px;min-width:0;text-align:right"></div>
       <div class="setrow" style="padding-block:8px"><span style="line-height:1.35">大盤創高價<br><span class="xs mute">（近12個月內）</span></span><span class="m" id="ixHighTxt" style="text-align:right;line-height:1.35">—</span></div>
       <div class="setrow" style="padding-block:8px"><span style="line-height:1.35">最近大盤收盤價<br><span class="xs mute">&nbsp;</span></span><span class="m" id="ixNowTxt" style="text-align:right;line-height:1.35">—</span></div>
     </section>
@@ -344,7 +347,7 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
 <script>
 (function(){
 'use strict';
-var KIND={dca:'定期定額',extra:'手動加碼',reinvest:'股利再投入'};
+var KIND={dca:'定期定額',extra:'手動買進',reinvest:'股利複投'};
 var SRC={job:'打工收入',rent:'房租收入',div:'股利再投入',other:'其他'};
 var DEFAULT_SYMS=[{c:'0055',n:'元大MSCI金融'},{c:'00685L',n:'群益台灣加權正2'},{c:'00938',n:'凱基優選30'},{c:'00701',n:'國泰股利精選30'},{c:'6005',n:'群益證'}];
 var DEFAULT_RULES=['每月業外收入投資，不預設進場價。','大盤自高點回檔 15%、25% 時，提高正2（00685L）購買比例。','投資目標市值：333 萬。','不做短線進出，專注做成退休金帳戶。'];
@@ -462,17 +465,23 @@ function goalSeries(){
 function monthInvest(m){var t=0;state.entries.forEach(function(e){if(e.date.slice(0,7)===m)t+=amount(e)});return t}
 
 /* ---------- 總覽 ---------- */
-function scaleHtml(T){return [0,.25,.5,.75,1].map(function(r){return '<span>'+(r===0?'0':wan(T*r).replace(' ',''))+'</span>'}).join('')}
+function scaleHtml(T){return ['0%','25%','50%','75%','100%'].map(function(t){return '<span>'+t+'</span>'}).join('')}
+function runTime(){
+  if(!state.entries.length)return '尚無買進紀錄';
+  var f='9999-99',l='0000-00';state.entries.forEach(function(e){var m=e.date.slice(0,7);if(m<f)f=m;if(m>l)l=m});
+  var n=(+l.slice(0,4)-+f.slice(0,4))*12+(+l.slice(5,7)-+f.slice(5,7))+1,y=Math.floor(n/12),mo=n%12;
+  return '專案已執行'+(y?y+'年':'')+(mo?mo+'個月':'');
+}
 function renderHome(){
   var T=state.target, h=holdingAt(null), syms=Object.keys(h.held).filter(function(k){return h.held[k]>0}), cost=h.total, val=null, src='';
-  $('hTarget').textContent=n0(T);
+  $('hTarget').textContent=wan(T).replace(' ','');
   if(syms.length){
     var ok=true,v=0,oldest='';
     syms.forEach(function(k){var p=priceNow(k);if(p.px!=null){v+=h.held[k]*p.px;if(!oldest||p.at<oldest)oldest=p.at}else ok=false});
     if(ok){val=v;src=oldest?'價格 '+md(oldest):''}
     else{var ser=goalSeries();if(ser.length){var L=ser[ser.length-1];val=L.val;cost=L.cost;src='用 '+rocS(L.m)+' 月底價'}else src='尚無價格'}
   }else src='尚無買進紀錄';
-  $('hSrc').textContent=src;
+  $('hSrc').textContent=runTime();
   var gain=val==null?null:val-cost, pct=val==null?null:val/T*100;
   $('hPct').textContent=pct==null?'—':(pct<10?pct.toFixed(2):pct.toFixed(1))+'%';
   var cW=val==null?Math.min(100,cost/T*100):Math.min(100,Math.min(cost,val)/T*100);
@@ -627,7 +636,7 @@ function renderBuys(fy){
 }
 function renderIncome(fy){
   var list=state.income.filter(function(r){return fy==='all'||r.month.slice(0,4)===fy}).sort(function(a,b){return a.month<b.month?1:(a.month>b.month?-1:(a.id<b.id?1:-1))});
-  if(!state.income.length){$('recCount').textContent='';$('recBody').innerHTML='<div class="empty">還沒有業外收入紀錄。按「＋」→「業外收入」新增。</div>';return}
+  if(!state.income.length){$('recCount').textContent='';$('recBody').innerHTML='<div class="empty">還沒有收入紀錄。按「＋」→「收入」新增。</div>';return}
   var tot=0;list.forEach(function(r){tot+=r.amount});
   $('recCount').textContent=list.length?list.length+' 筆，合計 '+n0(tot)+' 元':'此範圍沒有紀錄';
   $('recBody').innerHTML=list.length?'<div class="grp">'+list.map(function(r,i){
@@ -650,7 +659,7 @@ function renderMonthSum(fy){
     var b=by[m],sum=b.job+b.rent+b.div+b.other,inv=monthInvest(m),rest=sum-inv,ratio=sum>0?inv/sum*100:null;
     var keys=['job','rent','div','other'].filter(function(k){return b[k]>0});
     return '<section class="card" style="padding:14px 16px"><div class="rowb"><h2>'+roc(m)+'</h2><span class="small mute">投入比例 <span class="m '+(ratio>100?'warn':'')+'" style="'+(ratio!=null&&ratio<=100?'color:var(--ink)':'')+'">'+(ratio==null?'—':ratio.toFixed(0)+'%')+'</span></span></div>'+
-      '<dl class="tiles" style="margin-top:10px"><div class="tile"><dt>業外收入</dt><dd>'+n0(sum)+'</dd></div><div class="tile"><dt>當月買進</dt><dd>'+n0(inv)+'</dd></div><div class="tile"><dt>未投入餘額</dt><dd class="'+(rest<0?'down':'')+'">'+sign(rest)+abs0(rest)+'</dd></div></dl>'+
+      '<dl class="tiles" style="margin-top:10px"><div class="tile"><dt>收入</dt><dd>'+n0(sum)+'</dd></div><div class="tile"><dt>當月買進</dt><dd>'+n0(inv)+'</dd></div><div class="tile"><dt>未投入餘額</dt><dd class="'+(rest<0?'down':'')+'">'+sign(rest)+abs0(rest)+'</dd></div></dl>'+
       (sum>0?'<div role="img" aria-label="收入組成" style="display:flex;height:6px;border-radius:999px;overflow:hidden;margin-top:12px;gap:2px">'+keys.map(function(k){return '<div style="width:'+(b[k]/sum*100)+'%;background:'+colors[k]+'"></div>'}).join('')+'</div>'+
       '<div class="leg" style="margin-top:6px">'+keys.map(function(k){return '<span><i style="border-color:'+colors[k]+';width:8px;border-top-width:8px;border-radius:2px"></i>'+names[k]+' <span class="m">'+n0(b[k])+'</span></span>'}).join('')+'</div>':'')+
       '</section>';
@@ -790,7 +799,7 @@ function renderSim(){
     var L2=ser[ser.length-1];me=(+L2.m.slice(0,4)-1911)+'年'+(+L2.m.slice(5,7))+'月底，持倉市值'+n0(L2.val)+'元（達成'+(L2.val/T*100).toFixed(2)+'%）';
   }
   $('chartBody').innerHTML='<section class="card"><div class="rowb"><h2>達成 '+wan(T)+'需要多久</h2><span class="xs faint">試算，不是預測</span></div>'+
-    '<p class="note" style="margin-top:4px">自 '+roc(simStart())+'起每月固定投入，年化報酬固定，不含手續費與稅。</p>'+
+    '<p class="note" style="margin-top:4px">每月將閒置資金進場（只買不賣），在理論年化報酬複利下，所需要的時間。</p>'+
     '<div class="tw" style="margin-top:8px"><table class="simt"><thead><tr><th>每月投入</th><th>8%</th><th>12%</th><th>18%</th></tr></thead><tbody>'+tbl+'</tbody></table></div></section>'+
     '<section class="card"><div class="row" style="align-items:flex-end"><label class="f" style="flex:1">每月投入（萬）<input class="inp m" type="number" id="simWan" step="0.1" min="0.1" inputmode="decimal" value="'+fmtWan(C).replace(/,/g,'')+'"></label>'+
     '<div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--mute)">年化報酬<div class="seg soft" role="group" aria-label="預計達成日採用的年化報酬" id="simRateSeg">'+SIM_R.map(function(R){return '<button type="button" data-r="'+R+'" aria-pressed="'+(R===simRate())+'" style="min-height:40px;padding:0 10px">'+(R*100)+'%</button>'}).join('')+'</div></div></div>'+
@@ -811,7 +820,7 @@ $('cvSym').addEventListener('change',guard('標的',renderCv));
 function renderMore(){
   renderSyms();renderRules();
   document.querySelectorAll('.tgtTxt').forEach(function(e){e.textContent=wan(state.target)});
-  if(document.activeElement!==$('target'))$('target').value=state.target;
+  if(document.activeElement!==$('target'))$('target').value=Math.round(state.target/1000)/10;
   renderIdx();
   renderBackup();renderQuoteState();
 }
@@ -836,7 +845,7 @@ function renderPx(){
     scheduleSave();renderAll();toast(v===''?'已清除手動價':'已改用手動價 '+v);
   }))});
 }
-$('target').addEventListener('change',guard('目標',function(){var v=Math.round(parseFloat($('target').value));if(isFinite(v)&&v>0){state.target=v;scheduleSave();renderAll();toast('目標改為 '+wan(v))}else $('target').value=state.target}));
+$('target').addEventListener('change',guard('目標',function(){var v=Math.round(parseFloat($('target').value)*10000);if(isFinite(v)&&v>0){state.target=v;scheduleSave();renderAll();toast('目標改為 '+wan(v))}else $('target').value=Math.round(state.target/1000)/10}));
 
 /* 我的標的 */
 function renderSyms(){
