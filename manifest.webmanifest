@@ -1,15 +1,16 @@
 {
-  "name": "定期定額紀錄簿",
-  "short_name": "定期定額",
+  "name": "HODL 退休金主動帳戶",
+  "short_name": "HODL",
   "lang": "zh-Hant",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0B1017",
   "theme_color": "#0B1017",
   "icons": [
-    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
-    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
-    {"src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {"src": "hodl-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "hodl-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "hodl-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ]
 }
