@@ -87,6 +87,27 @@ input[type=date]::-webkit-date-and-time-value,input[type=month]::-webkit-date-an
 .mlab{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin:14px 0 2px}
 .hd2{display:grid;grid-template-columns:1fr auto;align-items:center;row-gap:2px}
 .hd2 h1{margin:0;font-size:22px;font-weight:700}
+.hd2>.brand{grid-column:1/-1}
+.hdr{justify-self:end;display:flex;gap:8px;align-items:center}
+.eyeb{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:none;color:var(--mute);display:grid;place-items:center;padding:0}
+.eyeb[aria-pressed="true"]{color:var(--acc);border-color:#1F4E58;background:rgba(34,211,238,.06)}
+.eyeb:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+html.priv .m,html.priv dd,html.priv td,html.priv #hPct,html.priv svg text,html.priv .hxt b,html.priv .alT,html.priv .pv,html.priv .more3 b,html.priv #hTarget{filter:blur(7px);transition:filter .2s}
+html.priv #ixBody .m,html.priv #ixMeta .m,html.priv #ixBody svg text{filter:none}
+.yrs dd small{margin-left:6px;font-size:11px}
+.streak{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;padding:8px 10px;border-radius:10px;background:#05090D;border:1px solid #12303A;font-family:"Share Tech Mono",var(--mono);font-size:12.5px;color:#9FE8F2;line-height:1.5}
+.streak b{color:#2FCB85;font-weight:400}.streak .bs{color:var(--mute)}
+.streak.w{border-color:rgba(251,191,36,.55);color:#FBBF24;box-shadow:0 0 14px rgba(251,191,36,.1)}.streak.w b{color:#FBBF24}
+.pfoot{margin:8px 6px 0;padding:8px 10px;border-left:2px solid #A78BFA;background:rgba(167,139,250,.07);border-radius:0 8px 8px 0;font-size:11.5px;color:#CFC8F7;line-height:1.65}
+.pfoot .k{font-family:"Share Tech Mono",var(--mono);color:#A78BFA;letter-spacing:.06em;margin-right:6px}
+.sug{border:1px dashed rgba(34,211,238,.45);border-radius:12px;padding:10px 12px;background:#081018}
+.sug .t{font-family:"Share Tech Mono",var(--mono);color:var(--acc);font-size:12.5px;letter-spacing:.06em}
+.sug .r{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.alcb{height:6px;background:#0D131B;border-radius:3px;position:relative;margin-top:6px}.alcb b{position:absolute;left:0;top:0;bottom:0;border-radius:3px}.alcb s{position:absolute;top:-3px;bottom:-3px;width:2px;background:#E6EDF3;opacity:.8}
+.yrs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}.yrs::-webkit-scrollbar{display:none}
+.yrs>section{flex:0 0 100%;scroll-snap-align:start;min-width:0;box-sizing:border-box}
+.yrn{font-family:Rajdhani,var(--sans);font-weight:700;font-size:34px;letter-spacing:.08em;line-height:1;background:linear-gradient(90deg,#22D3EE,#A78BFA);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ydots{display:flex;justify-content:center;gap:6px;margin-top:8px}.ydots i{width:6px;height:6px;border-radius:50%;background:#2A3644}.ydots i.on{background:var(--acc)}
 .brand,.ver{font-family:Rajdhani,var(--sans);font-weight:700;font-size:14px;letter-spacing:.18em;color:var(--mute)}
 .brand i{font-style:normal;background:linear-gradient(90deg,#22D3EE,#A78BFA);-webkit-background-clip:text;background-clip:text;color:transparent}
 .ver{color:#A78BFA;justify-self:end}
@@ -258,7 +279,7 @@ sp.addEventListener('click',hide);setTimeout(hide,2000);})();</script>
   <section class="view" id="v-home" aria-label="總覽">
     <div class="hd2">
       <span class="brand"><i>HODL</i>累積帳戶</span>
-      <h1>總覽</h1><span class="chip" id="saveChip" style="justify-self:end"><span class="dot" id="saveDot"></span><span id="status">載入中…</span></span>
+      <h1>總覽</h1><span class="hdr"><button type="button" class="eyeb" id="privBtn" aria-pressed="false" aria-label="隱私模式：隱藏金額"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="slash" d="M4 4l16 16"/></svg></button><span class="chip" id="saveChip"><span class="dot" id="saveDot"></span><span id="status">載入中…</span></span></span>
     </div>
     <section class="card" aria-label="目標達成進度">
       <div class="rowb small mute"><span>市值目標 <span class="m" style="color:var(--ink)" id="hTarget">—</span></span><span id="hSrc"></span></div>
@@ -269,6 +290,7 @@ sp.addEventListener('click',hide);setTimeout(hide,2000);})();</script>
       <div class="scale" id="hScale"></div>
       <dl class="tiles" style="margin-top:14px" id="hTiles"></dl>
       <div class="more3" id="hMore"></div>
+      <div id="hStreak"></div>
     </section>
     <section class="card" aria-label="大盤回檔觀察">
       <h2 style="white-space:nowrap">大盤回檔觀察</h2><div class="xs mute" id="ixMeta" style="margin-top:2px"></div>
@@ -293,6 +315,7 @@ sp.addEventListener('click',hide);setTimeout(hide,2000);})();</script>
       <button type="button" id="addModeInc" aria-pressed="false">收入</button>
     </div>
     <form id="buyForm" autocomplete="off" class="view" novalidate>
+      <div id="allocHint"></div>
       <div style="display:flex;flex-direction:column;gap:6px">
         <span class="small mute" id="lblSym">標的</span>
         <div class="pills" id="symPills" role="group" aria-labelledby="lblSym"></div>
@@ -361,8 +384,10 @@ sp.addEventListener('click',hide);setTimeout(hide,2000);})();</script>
     <div class="hd"><h1>圖表</h1><select class="inp sm" id="cvSym" aria-label="標的" style="width:auto"></select></div>
     <div class="seg soft" role="tablist" aria-label="圖表分類">
       <button type="button" role="tab" data-t="cv" aria-selected="true">盈虧</button>
-      <button type="button" role="tab" data-t="goal" aria-selected="false">達成進度</button>
-      <button type="button" role="tab" data-t="sim" aria-selected="false">目標試算</button>
+      <button type="button" role="tab" data-t="goal" aria-selected="false">達成</button>
+      <button type="button" role="tab" data-t="sim" aria-selected="false">試算</button>
+      <button type="button" role="tab" data-t="alloc" aria-selected="false">配置</button>
+      <button type="button" role="tab" data-t="year" aria-selected="false">年度</button>
     </div>
     <div class="view" id="chartBody"></div>
   </section>
@@ -390,6 +415,12 @@ sp.addEventListener('click',hide);setTimeout(hide,2000);})();</script>
       <div class="rowb" style="padding-top:10px"><h2>價格提醒</h2></div>
       <p class="xs mute" style="margin:2px 0 4px">現價 ≤ 設定價時，總覽持有概況會出現警報。按「已處理」後該價位提醒即移除（一次性）。每檔可填多個價格，用逗號分隔；留空＝不提醒。</p>
       <div id="alSet"></div>
+    </section>
+
+    <section class="card" aria-label="目標配置" style="padding-block:4px">
+      <div class="rowb" style="padding-top:10px"><h2>目標配置</h2><span class="small m" id="apSum"></span></div>
+      <p class="xs mute" style="margin:2px 0 4px">各檔想占的比例（%），合計 100%。「圖表 → 配置」和新增買進時，會依此建議下一筆買哪檔；只建議買進，不建議賣出。</p>
+      <div id="apSet"></div>
     </section>
 
     <section class="card" aria-label="設定" style="padding-block:4px">
@@ -454,7 +485,7 @@ var SYMS=[],CODES=[];
 function setSyms(list){SYMS=(list||[]).filter(function(x){return x&&x.c});CODES=SYMS.map(function(x){return x.c})}
 var BACKUP_BASE='2026-09-21', SIM_START=null;
 function simStart(){if(SIM_START)return SIM_START;var ms=monthList();return ms.length?ms[0]:curMonth()}
-var state={entries:[],prices:{},checks:{},income:[],mprices:{},backup:{},target:3330000,idx:{},priceAt:{},syms:null,rules:null,alerts:{},alHit:{},alAck:{}};
+var state={entries:[],prices:{},checks:{},income:[],mprices:{},backup:{},target:3330000,idx:{},priceAt:{},syms:null,rules:null,alloc:{},alerts:{},alHit:{},alAck:{}};
 var quotes={latest:null,monthEnd:{}};
 var ref=null, saveTimer=null, dirty=false, saveTry=0, loaded=false;
 var ui={view:'home',addMode:'buy',sym:'00685L',kind:'dca',src:'job',recTab:'buy',chartTab:'cv',simC:30000,simPr:false,simGn:false,expRec:{},recAuto:true,expSnap:{}};
@@ -496,7 +527,7 @@ function toast(t,ty){var el=$('toast');t=String(t);ty=ty||(/失敗|錯誤|抓不
 function setStatus(t,kind){$('status').textContent=t;$('saveDot').className='dot'+(kind?' '+kind:'')}
 
 /* ---------- 儲存 ---------- */
-function payload(){return {entries:state.entries,prices:state.prices,checks:state.checks,income:state.income,mprices:state.mprices,backup:state.backup,target:state.target,idx:state.idx,priceAt:state.priceAt,qLatest:quotes.latest||null,qMonth:quotes.monthEnd||{},syms:state.syms||[],rules:state.rules||[],simWan:state.simWan||null,simRate:state.simRate||null,goalYr:state.goalYr||null,alerts:state.alerts||{},alHit:state.alHit||{},alAck:state.alAck||{},idxHist:state.idxHist||{},idxDone:state.idxDone||{}}}
+function payload(){return {entries:state.entries,prices:state.prices,checks:state.checks,income:state.income,mprices:state.mprices,backup:state.backup,target:state.target,idx:state.idx,priceAt:state.priceAt,qLatest:quotes.latest||null,qMonth:quotes.monthEnd||{},syms:state.syms||[],rules:state.rules||[],simWan:state.simWan||null,simRate:state.simRate||null,goalYr:state.goalYr||null,alloc:state.alloc||{},alerts:state.alerts||{},alHit:state.alHit||{},alAck:state.alAck||{},idxHist:state.idxHist||{},idxDone:state.idxDone||{}}}
 function scheduleSave(){dirty=true;setStatus('儲存中…','w');clearTimeout(saveTimer);saveTimer=setTimeout(doSave,500)}
 function doSave(){
   clearTimeout(saveTimer);
@@ -524,7 +555,7 @@ function adopt(d){
   state.syms=Array.isArray(d.syms)?thaw(d.syms,[]):(had?thaw(DEFAULT_SYMS,[]):[]);
   state.rules=Array.isArray(d.rules)?thaw(d.rules,[]):(had?DEFAULT_RULES.slice():[]);
   setSyms(state.syms);
-  state.simWan=d.simWan||null;state.simRate=d.simRate||null;state.goalYr=d.goalYr||null;state.alerts=thaw(d.alerts,{})||{};state.alHit=thaw(d.alHit,{})||{};state.alAck=thaw(d.alAck,{})||{};state.idxHist=thaw(d.idxHist,{})||{};state.idxDone=thaw(d.idxDone,{})||{};
+  state.simWan=d.simWan||null;state.simRate=d.simRate||null;state.goalYr=d.goalYr||null;state.alloc=thaw(d.alloc,{})||{};state.alerts=thaw(d.alerts,{})||{};state.alHit=thaw(d.alHit,{})||{};state.alAck=thaw(d.alAck,{})||{};state.idxHist=thaw(d.idxHist,{})||{};state.idxDone=thaw(d.idxDone,{})||{};
   if(d.qLatest&&(!quotes.latest||(d.qLatest.asOf||'')>(quotes.latest.asOf||'')))quotes.latest=thaw(d.qLatest,null);
   var qm=thaw(d.qMonth,{});Object.keys(qm).forEach(function(m){var a=quotes.monthEnd[m],b=qm[m];if(!a||(b.final&&!a.final)||(!a.final&&(b.asOf||'')>(a.asOf||'')))quotes.monthEnd[m]=b});
 }
@@ -583,7 +614,7 @@ function renderHome(){
     if(ok){val=v;src=oldest?'價格 '+md(oldest):''}
     else{var ser=goalSeries();if(ser.length){var L=ser[ser.length-1];val=L.val;cost=L.cost;src='用 '+rocS(L.m)+' 月底價'}else src='尚無價格'}
   }else src='尚無買進紀錄';
-  $('hSrc').textContent=runTime();
+  $('hSrc').textContent=runTime();renderStreak();
   var gain=val==null?null:val-cost, pct=val==null?null:val/T*100;
   $('hPct').textContent=pct==null?'—':(pct<10?pct.toFixed(2):pct.toFixed(1))+'%';
   var cW=val==null?Math.min(100,cost/T*100):Math.min(100,Math.min(cost,val)/T*100);
@@ -680,7 +711,7 @@ function renderAdd(){
   $('buyForm').hidden=ui.addMode!=='buy';$('incForm').hidden=ui.addMode!=='inc';
   if(allCodes().indexOf(ui.sym)<0)ui.sym=allCodes()[0]||'';
   $('symPills').innerHTML=allCodes().length?allCodes().map(function(c){return '<button type="button" class="pill m" data-c="'+esc(c)+'" aria-pressed="'+(c===ui.sym)+'">'+esc(c)+'</button>'}).join(''):'<span class="small mute">還沒有標的。請先到「更多 → 我的標的」新增股票代號。</span>';
-  $('symName').textContent=symName(ui.sym);
+  $('symName').textContent=symName(ui.sym);renderAllocHint();
   document.querySelectorAll('#kindSeg button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.k===ui.kind))});
   document.querySelectorAll('#srcPills button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.s===ui.src))});
   $('iLabelWrap').hidden=ui.src!=='custom';
@@ -840,7 +871,7 @@ function renderChart(){
   document.querySelectorAll('#v-chart [role=tab]').forEach(function(b){b.setAttribute('aria-selected',String(b.dataset.t===ui.chartTab))});
   fillSel($('cvSym'),[['all','全部標的']].concat(SYMS.map(function(x){return [x.c,x.c]})),true);
   $('cvSym').hidden=ui.chartTab!=='cv';
-  if(ui.chartTab==='cv')renderCv();else if(ui.chartTab==='goal')renderGoal();else renderSim();
+  if(ui.chartTab==='cv')renderCv();else if(ui.chartTab==='goal')renderGoal();else if(ui.chartTab==='alloc')renderAlloc();else if(ui.chartTab==='year')renderYear();else renderSim();
 }
 function renderCv(){
   var sr=seriesFor($('cvSym').value),rows=sr.rows;
@@ -872,11 +903,11 @@ function renderCv(){
     '<section class="card"><h2 style="margin-bottom:6px">每月結算損益</h2><p class="note">點月份看當月底各標的持有快照。</p><div class="tw"><table><thead><tr><th>月底</th><th>投入</th><th>市值</th><th>損益</th><th>報酬率</th></tr></thead><tbody id="cvTbl">'+tbl+'</tbody></table></div></section>';
   document.querySelectorAll('#cvTbl tr.click').forEach(function(tr){var f=guard('展開',function(){ui.expSnap[tr.dataset.m]=!ui.expSnap[tr.dataset.m];renderCv()});tr.addEventListener('click',f);tr.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}})});
 }
-var PLAN_R=.08;
+var PLAN_R=.08; // 與目標試算共用 SHARED_R
 function goalYear(){var y=parseInt(state.goalYr,10);if(y>2000)return y;
   var ser=goalSeries(),s0=ser.length?ser[0].m:curMonth(),C=avg12()||30000,i=Math.pow(1+PLAN_R,1/12)-1,v=0,k=0;
   while(v<state.target&&k<600){v=v*(1+i)+C;k++}
-  return Math.min(+addMonths(s0+'-01',Math.max(0,k-1)).slice(0,4),new Date().getFullYear()+40)}
+  var ny=new Date().getFullYear();return Math.max(ny,Math.min(+addMonths(s0+'-01',Math.max(0,k-1)).slice(0,4),ny+40))}
 function planInfo(s0){
   var G=goalYear()+'-12',N=Math.max(1,monthsBetween(s0,G)+1),i=Math.pow(1+PLAN_R,1/12)-1,T=state.target,P=T*i/(Math.pow(1+i,N)-1);
   return {N:N,P:P,i:i,G:G,at:function(k){return P*(Math.pow(1+i,k+1)-1)/i}};
@@ -887,6 +918,7 @@ function renderGoal(){
   if(!ser.length){$('chartBody').innerHTML='<div class="empty">'+(state.entries.length?'還沒有任何月份湊齊價格。自動報價跑過一次後就會出現。':'還沒有買進紀錄。')+'</div>';return}
   var L=ser[ser.length-1],pct=L.val/T*100,C=avg12(),start=ser[0].m,PL=planInfo(start),past=ser.length-1;
   var need=PL.at(past),gap=L.val-need,gy=goalYear();
+  if(!state.goalYr){state.goalYr=gy;scheduleSave()}
   var miles=[25,50,75,100].map(function(x){
     var th=T*x/100,hit=null;for(var i=0;i<ser.length;i++)if(ser[i].val>=th){hit=ser[i].m;break}
     var pk=0;while(pk<PL.N-1&&PL.at(pk)<th)pk++;
@@ -925,21 +957,106 @@ function renderGoal(){
     '<div class="eta">PLAN '+gy+'.12<small class="'+cls(gap)+'">'+gapTxt+'</small></div>'+
     '<div class="svgw hxw" id="hxw"><svg id="hxs" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="實際市值、投入本金與應達市值。用手指在圖上左右滑動可查看每個月的數字">'+g+'<g id="hxg" style="display:none"><line id="hxl" y1="'+Tp+'" y2="'+(Tp+ih)+'" stroke="#E6EDF3" stroke-width="1" stroke-dasharray="3 3" opacity=".8"/><circle id="hxa" r="4" fill="#E6EDF3"/><circle id="hxp" r="4" fill="#A78BFA"/><circle id="hxc" r="3.5" fill="#F5B83D"/></g></svg><div class="hxt" id="hxt" hidden></div></div>'+
     '<div class="xs" style="color:var(--faint);padding:2px 6px 0">用手指在圖上左右滑動，可查看每個月的數字</div>'+
+    '<div class="pfoot"><span class="k">PLAN · 8%</span>紫色虛線為「應達市值」：以年化報酬 8% 推估，自第一筆投入起每月穩定投入 <b class="m">'+n0(PL.P)+'</b> 元，可在 <b>'+gy+' 年底</b>累積到 '+wan(T)+'。這是檢視紀律的參考線，不代表報酬保證。</div>'+
     '<div class="hleg" role="group" aria-label="曲線顯示">'+[['a','#E6EDF3','實際市值'],['p','#A78BFA','應達市值'],['c','#F5B83D','投入本金']].map(function(x){return '<button type="button" class="htg" data-k="'+x[0]+'" aria-pressed="'+(!!gs[x[0]])+'"><i style="background:'+x[1]+'"></i>'+x[2]+'</button>'}).join('')+'</div>'+(zoom?'<div class="xs" style="color:var(--mute);padding:4px 6px 0">已放大顯示實際數字（開啟「應達市值」可看到目標與計畫）</div>':'')+
     (ser.length<12?'<div class="hwarn">資料月份不足，圖表可能失真</div>':'')+
     '<dl class="kv kv2" style="margin-top:12px"><div><dt>本月應達市值</dt><dd>'+n0(need)+'</dd></div><div><dt>'+(ahead?'超前計畫':'落後計畫')+'</dt><dd class="'+cls(gap)+'">'+n0(Math.abs(gap))+'</dd></div>'+
     '<div><dt>計畫每月投入</dt><dd>'+n0(PL.P)+'</dd></div><div><dt>近 12 月平均投入</dt><dd class="'+cls(C-PL.P)+'">'+n0(C)+'</dd></div></dl>'+
     '<p class="note" style="margin-top:10px;line-height:1.7">本月進度 '+sp(mP)+(lastP==null?'':'（上月 '+sp(lastP)+'）')+'：投入本金貢獻 <b class="m" style="color:var(--ink)">'+sp(prinP)+'</b>、市場漲跌貢獻 <b class="m '+cls(mktP)+'">'+sp(mktP)+'</b>。要在 <b class="m" style="color:#A78BFA">'+gy+' 年底</b>達標，每月需投入約 <b class="m" style="color:var(--ink)">'+n0(PL.P)+'</b>'+(C>=PL.P?'，目前的平均投入已經足夠。':'，目前平均少 '+n0(PL.P-C)+'。')+'</p>'+
-    '<p class="note" style="margin-top:6px">應達市值＝從第一筆投入開始，每月固定投入「計畫每月投入」、年化報酬 8%，剛好在目標年份年底達到目標的路線。白線在紫線上方代表超前。達標年份可到「更多」修改。</p></section>'+
+    '<p class="note" style="margin-top:6px">白線在紫線上方＝超前計畫；在下方＝落後。達標年份可到「更多」修改。</p></section>'+
     '<section class="card"><h2 style="margin-bottom:6px">里程碑</h2><div class="tw"><table><thead><tr><th>里程碑</th><th>門檻</th><th>首次達成日</th><th>計畫達成</th></tr></thead><tbody>'+miles+'</tbody></table></div><p class="note" style="margin-top:8px">「計畫達成」是依應達市值路線推算的月份，試算並非結果預期。</p></section>'+
     '<section class="card"><h2 style="margin-bottom:6px">每月達成率</h2><div class="tw"><table><thead><tr><th>日期</th><th>市值</th><th>投入</th><th>達成率</th><th>較上月</th></tr></thead><tbody>'+(function(){return ser.slice().reverse().map(function(q,i,a){var p=q.val/T*100,pv2=a[i+1],d=pv2?p-pv2.val/T*100:null;return '<tr><td>'+rocS(q.m)+'</td><td>'+n0(q.val)+'</td><td>'+n0(q.cost)+'</td><td>'+p.toFixed(2)+'%</td><td class="'+cls(d)+'">'+(d==null?'—':sign(d)+Math.abs(d).toFixed(2))+'</td></tr>'}).join('')})()+'</tbody></table></div></section>';
   var hc=$('hudCard');if(hc){hc.querySelectorAll('.hdraw').forEach(function(p){p.style.setProperty('--len',Math.ceil(p.getTotalLength()))});hc.classList.add('play');bindHx();hc.querySelectorAll('.htg').forEach(function(bt){bt.addEventListener('click',function(){var k=bt.dataset.k;ui.gs[k]=ui.gs[k]?0:1;if(!ui.gs.a&&!ui.gs.p&&!ui.gs.c)ui.gs[k]=1;try{localStorage.setItem('dca-gs',JSON.stringify(ui.gs))}catch(e){}renderGoal()})})}
 }
-var SIM_R=[.08,.12,.18],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
+// ===== 紀律連續紀錄 =====
+function prevM(m){return addMonths(m+'-01',-1).slice(0,7)}
+function streakInfo(){
+  var set={};state.entries.forEach(function(e){set[e.date.slice(0,7)]=1});
+  var cm=curMonth(),has=!!set[cm],m=has?cm:prevM(cm),cur=0;while(set[m]){cur++;m=prevM(m)}
+  var ms=Object.keys(set).sort(),best=0,run=0,last=null;ms.forEach(function(x){run=(last&&prevM(x)===last)?run+1:1;best=Math.max(best,run);last=x});
+  var d=new Date(),left=new Date(d.getFullYear(),d.getMonth()+1,0).getDate()-d.getDate();
+  return {cur:cur,best:best,has:has,left:left,any:ms.length>0};
+}
+function renderStreak(){
+  var el=$('hStreak');if(!el)return;var S=streakInfo();if(!S.any){el.innerHTML='';return}
+  if(!S.has&&S.left<=4){el.innerHTML='<div class="streak w" role="status"><span>[WARN] 本月還沒有投入紀錄'+(S.cur?'，連續 '+S.cur+' 個月將在 '+(S.left+1)+' 天後中斷':'')+'</span></div>';return}
+  el.innerHTML='<div class="streak"><span>&gt; 連續投入 <b>'+S.cur+'</b> 個月'+(S.has?'':'<span class="bs">（本月未記）</span>')+'</span><span class="bs">最長 '+S.best+' 個月</span></div>';
+}
+// ===== 目標配置 =====
+function allocT(){var a=state.alloc||{},o={},sum=0;Object.keys(a).forEach(function(k){var v=+a[k];if(v>0){o[k]=v;sum+=v}});return {t:o,sum:sum,n:Object.keys(o).length}}
+function allocNow(){var h=holdingAt(null),v={},tot=0,ok=true;Object.keys(h.held).forEach(function(k){if(!(h.held[k]>0))return;var p=priceNow(k).px;if(p==null){ok=false;return}v[k]=h.held[k]*p;tot+=v[k]});return {v:v,tot:tot,ok:ok}}
+function nextBuyAmt(){var ser=goalSeries(),x=ser.length?planInfo(ser[0].m).P:avg12();return Math.max(1000,Math.round(x/100)*100)}
+function allocSuggest(X){
+  var A=allocT();if(!A.n)return null;var N=allocNow(),tot=N.tot+X,def={},sd=0,out=[];
+  Object.keys(A.t).forEach(function(k){var t=A.t[k]/A.sum,d=Math.max(0,t*tot-(N.v[k]||0));def[k]=d;sd+=d});
+  Object.keys(A.t).forEach(function(k){var t=A.t[k]/A.sum,a=sd>=X?(sd?def[k]*X/sd:0):def[k]+(X-sd)*t;a=Math.round(a/100)*100;if(a>=100)out.push({c:k,a:a})});
+  out.sort(function(a,b){return b.a-a.a});return out;
+}
+function renderAllocHint(){
+  var el=$('allocHint');if(!el)return;var X=nextBuyAmt(),S=allocSuggest(X);
+  if(!S||!S.length){el.innerHTML='';return}
+  var A=allocT(),N=allocNow(),over=N.tot&&A.t[ui.sym]&&(N.v[ui.sym]||0)/N.tot*100>A.t[ui.sym]/A.sum*100;
+  el.innerHTML='<div class="sug" style="margin-bottom:12px"><div class="t">&gt; 配置建議 · 下一筆 '+n0(X)+'</div><div style="margin-top:3px;font-size:13px">'+S.map(function(x){return '<span class="m">'+esc(x.c)+'</span> <b class="m">'+n0(x.a)+'</b>'}).join('　')+'</div>'+(over?'<div class="xs" style="color:#FBBF24;margin-top:4px">目前選的 '+esc(ui.sym)+' 已高於目標比例</div>':'')+'</div>';
+}
+function renderApSet(){
+  var box=$('apSet');if(!box)return;var codes=allCodes();
+  if(!box.contains(document.activeElement))box.innerHTML=codes.map(function(c){var v=(state.alloc||{})[c];return '<div class="setrow"><label for="ap_'+esc(c)+'" style="line-height:1.35"><span class="m" style="font-weight:600">'+esc(c)+'</span><br><span class="xs mute">'+esc(symName(c))+'</span></label><input class="inp sm m" type="number" id="ap_'+esc(c)+'" data-ap="'+esc(c)+'" inputmode="decimal" min="0" max="100" step="1" placeholder="0" value="'+(v>0?v:'')+'" style="width:90px;min-width:0;text-align:right"></div>'}).join('');
+  apSumUpd();
+}
+function apSumUpd(){var A=allocT();$('apSum').innerHTML=A.n?'合計 <span class="'+(Math.abs(A.sum-100)<0.01?'down':'warn')+'">'+(Math.round(A.sum*10)/10)+'%</span>':'未設定';
+}
+function donut(parts,r,w){var c=2*Math.PI*r,off=0,g='';parts.forEach(function(p){var L=Math.max(0,p.f)*c;g+='<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="'+p.col+'" stroke-width="'+w+'" stroke-dasharray="'+L.toFixed(2)+' '+(c-L).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 50 50)"/>';off+=L});return g}
+function renderAlloc(){
+  var N=allocNow(),A=allocT();
+  if(!N.tot){$('chartBody').innerHTML='<div class="empty">'+(N.ok?'還沒有持股。':'部分標的還沒有價格，更新報價後就會顯示。')+'</div>';return}
+  var codes=Object.keys(N.v).concat(Object.keys(A.t).filter(function(k){return !(k in N.v)}));
+  var outer=codes.map(function(k){return {f:(N.v[k]||0)/N.tot,col:symColor(k)}}),inner=A.n?codes.map(function(k){return {f:(A.t[k]||0)/A.sum,col:symColor(k)}}):[];
+  var svg='<svg viewBox="0 0 100 100" width="132" height="132" role="img" aria-label="外圈目前配置，內圈目標配置"><circle cx="50" cy="50" r="40" fill="none" stroke="#1A2430" stroke-width="12"/>'+donut(outer,40,12)+(A.n?'<circle cx="50" cy="50" r="25" fill="none" stroke="#1A2430" stroke-width="7"/>'+donut(inner,25,7).replace(/stroke-width="7"/g,'stroke-width="7" opacity=".55"'):'')+'<text x="50" y="48" text-anchor="middle" style="fill:#8B9AAB;font-size:7px">目前</text><text x="50" y="58" text-anchor="middle" style="fill:#E6EDF3;font-size:8px;font-family:var(--mono)">'+codes.length+' 檔</text></svg>';
+  var rows=codes.map(function(k){var cur=(N.v[k]||0)/N.tot*100,tg=A.n?(A.t[k]||0)/A.sum*100:null,d=tg==null?null:cur-tg;
+    return '<div style="padding:9px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px"><span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+symColor(k)+';margin-right:6px"></i><span class="m" style="font-weight:600">'+esc(k)+'</span> <span class="xs mute">'+esc(symName(k))+'</span></span><span class="m small">'+cur.toFixed(1)+'%'+(tg==null?'':' <span class="mute">/ '+tg.toFixed(0)+'%</span> <span class="'+(Math.abs(d)<1?'mute':d>0?'up':'down')+'">'+(d>=0?'+':'−')+Math.abs(d).toFixed(1)+'</span>')+'</span></div>'+
+      '<div class="alcb"><b style="width:'+Math.min(100,cur)+'%;background:'+symColor(k)+'"></b>'+(tg==null?'':'<s style="left:'+Math.min(99.5,tg)+'%"></s>')+'</div></div>'}).join('');
+  var X=nextBuyAmt(),S=allocSuggest(X);
+  $('chartBody').innerHTML='<section class="card"><h2 style="margin-bottom:8px">資產配置</h2><div style="display:flex;gap:14px;align-items:center">'+svg+'<div class="xs mute" style="line-height:1.8">外圈＝目前市值比例<br>'+(A.n?'內圈＝目標比例<br>白色刻度＝目標位置':'尚未設定目標比例')+'<br>總市值 <span class="m" style="color:var(--ink)">'+n0(N.tot)+'</span></div></div><div style="margin-top:10px">'+rows+'</div></section>'+
+    '<section class="card">'+(S&&S.length?'<div class="sug"><div class="t">&gt; NEXT BUY · '+n0(X)+'</div>'+S.map(function(x){return '<div class="r"><span class="m">'+esc(x.c)+' <span class="xs mute" style="font-family:var(--sans)">'+esc(symName(x.c))+'</span></span><b class="m">'+n0(x.a)+'</b></div>'}).join('')+'</div><p class="note" style="margin-top:8px">金額＝「達成」頁的計畫每月投入。只分給低於目標的標的，把比例往目標拉；已超過目標的這次先不買，不建議賣出。</p>':'<p class="note">到「更多 → 目標配置」填各檔的目標比例，這裡就會算出下一筆該買哪檔、各買多少。</p>')+'</section>';
+}
+// ===== 年度回顧 =====
+function yearData(){
+  if(!state.entries.length)return [];
+  var y0=+state.entries.map(function(e){return e.date}).sort()[0].slice(0,4),cy=+today().slice(0,4),out=[];
+  function valAt(m,cur){var h=holdingAt(m),v={},tot=0,ok=true;Object.keys(h.held).forEach(function(k){if(!(h.held[k]>0))return;var p=cur?priceNow(k).px:monthPx(m,k);if(p==null){ok=false;return}v[k]=h.held[k]*p;tot+=v[k]});return {v:v,tot:ok?tot:null}}
+  for(var y=y0;y<=cy;y++){
+    var inv=0,invS={},ms={};state.entries.forEach(function(e){if(+e.date.slice(0,4)===y){var a=amount(e);inv+=a;invS[e.sym]=(invS[e.sym]||0)+a;ms[e.date.slice(0,7)]=1}});
+    var div=0;state.income.forEach(function(r){if(r.src==='div'&&+String(r.month).slice(0,4)===y)div+=+r.amount||0});
+    var E=valAt(y===cy?null:y+'-12',y===cy),S=y===y0?{v:{},tot:0}:valAt((y-1)+'-12',false);
+    var gain=E.tot==null||S.tot==null?null:E.tot-S.tot-inv,base=(S.tot||0)+inv;
+    var rank=Object.keys(Object.assign({},E.v,invS)).map(function(k){return {c:k,g:(E.v[k]||0)-(S.v[k]||0)-(invS[k]||0)}}).sort(function(a,b){return b.g-a.g});
+    out.push({y:y,cur:y===cy,inv:inv,div:div,start:S.tot,end:E.tot,gain:gain,ret:gain==null||!base?null:gain/base*100,months:Object.keys(ms).length,rank:E.tot==null||S.tot==null?[]:rank});
+  }
+  return out.reverse();
+}
+function renderYear(){
+  var D=yearData();if(!D.length){$('chartBody').innerHTML='<div class="empty">還沒有買進紀錄。</div>';return}
+  var cards=D.map(function(d){var mx=0;d.rank.forEach(function(r){mx=Math.max(mx,Math.abs(r.g))});
+    return '<section class="card hudc" aria-label="'+d.y+' 年度回顧"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-end"><span class="yrn">'+d.y+'</span><span class="xs" style="font-family:\'Share Tech Mono\',monospace;color:var(--acc);letter-spacing:.12em">'+(d.cur?'YTD · 年初至今':'ANNUAL REVIEW')+'</span></div>'+
+    '<dl class="kv kv2" style="margin-top:12px"><div><dt>全年投入</dt><dd>'+n0(d.inv)+'</dd></div><div><dt>股利再投入</dt><dd>'+n0(d.div)+'</dd></div>'+
+    '<div><dt>'+(d.cur?'目前市值':'年底市值')+'</dt><dd>'+(d.end==null?'—':n0(d.end))+'</dd></div><div><dt>年度盈虧</dt><dd class="'+cls(d.gain)+'">'+(d.gain==null?'—':sign(d.gain)+abs0(d.gain))+(d.ret==null?'':'<small>'+sign(d.ret)+Math.abs(d.ret).toFixed(2)+'%</small>')+'</dd></div></dl>'+
+    '<div class="xs mute" style="margin:12px 0 4px">各標的貢獻</div>'+(d.rank.length?d.rank.map(function(r){return '<div style="display:grid;grid-template-columns:64px 1fr 76px;gap:8px;align-items:center;padding:4px 0"><span class="m small">'+esc(r.c)+'</span><span class="alcb" style="margin:0"><b style="width:'+(mx?Math.abs(r.g)/mx*100:0)+'%;background:'+(r.g>=0?'var(--up)':'var(--down)')+';opacity:.8"></b></span><span class="m small '+cls(r.g)+'" style="text-align:right">'+sign(r.g)+abs0(r.g)+'</span></div>'}).join(''):'<p class="note">這一年的月底價還沒補齊，暫時無法計算。</p>')+
+    '<div class="xs faint" style="margin-top:10px">投入月數 '+d.months+(d.cur?' / '+(+today().slice(5,7)):' / 12')+' · 期初市值 '+(d.start==null?'—':n0(d.start))+'</div></section>'}).join('');
+  $('chartBody').innerHTML='<div class="yrs" id="yrs">'+cards+'</div>'+(D.length>1?'<div class="ydots" id="ydots">'+D.map(function(d,i){return '<i class="'+(i?'':'on')+'"></i>'}).join('')+'</div><p class="xs faint" style="text-align:center;margin:4px 0 0">左右滑動切換年份</p>':'')+
+    '<div class="acts" style="margin-top:12px"><button type="button" class="tiny" id="yrCsv" style="color:var(--acc);border-color:#1F4E58">匯出年度報表 CSV</button></div>'+
+    '<p class="note" style="margin-top:8px">年度盈虧＝期末市值 − 期初市值 − 當年投入；報酬率以「期初市值＋當年投入」為分母的簡單估算。股利再投入取自收入紀錄中的「股利再投入」。</p>';
+  var sc=$('yrs');if(sc&&D.length>1)sc.addEventListener('scroll',function(){var i=Math.round(sc.scrollLeft/sc.clientWidth);document.querySelectorAll('#ydots i').forEach(function(x,j){x.className=j===i?'on':''})},{passive:true});
+  $('yrCsv').addEventListener('click',guard('匯出',function(){
+    var rows=[['年度','當年投入','股利再投入','期初市值','期末市值','年度盈虧','報酬率(%)','投入月數']];
+    D.slice().reverse().forEach(function(d){rows.push([d.y+(d.cur?'(年初至今)':''),Math.round(d.inv),Math.round(d.div),d.start==null?'':Math.round(d.start),d.end==null?'':Math.round(d.end),d.gain==null?'':Math.round(d.gain),d.ret==null?'':d.ret.toFixed(2),d.months])});
+    saveFile('HODL年度報表_'+today()+'.csv','﻿'+rows.map(function(r){return r.join(',')}).join('\r\n'),'text/csv');toast('年度報表已下載')}));
+}
+var SHARED_R=.08,SIM_R=[.08,.12,.18],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
 function fmtWan(v){return (Math.round(v/1000)/10).toLocaleString('zh-TW',{maximumFractionDigits:1})}
 function avg12(){var ms=monthList();if(!ms.length)return 30000;ms=ms.slice(-12);var t=0;ms.forEach(function(m){t+=monthInvest(m)});return t/ms.length}
 function simC(){var w=parseFloat(state.simWan);if(w>0)return w*10000;var a=avg12();return a>0?Math.round(a/1000)*1000:30000}
-function simRate(){var r=parseFloat(state.simRate);return SIM_R.indexOf(r)>=0?r:.12}
+function simRate(){return SHARED_R}
 function fmtD(d){return d.getFullYear()+'/'+pad(d.getMonth()+1)+'/'+pad(d.getDate())}
 function monthEndDate(m){
   var r=quotes.monthEnd&&quotes.monthEnd[m];if(r&&r.asOf&&(r.final||m<curMonth()))return r.asOf.replace(/-/g,'/');
@@ -1029,7 +1146,7 @@ function renderSim(){
     '<section class="card"><div style="display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px 10px;align-items:center">'+
     '<label for="simWan" style="font-size:12px;color:var(--mute);white-space:nowrap">每月投入（萬）</label><span style="font-size:12px;color:var(--mute)">年化報酬</span>'+
     '<input class="inp m" type="number" id="simWan" step="0.1" min="0.1" inputmode="decimal" style="min-height:44px;min-width:0;text-align:right" value="'+fmtWan(C).replace(/,/g,'')+'">'+
-    '<div class="seg soft" role="group" aria-label="年化報酬" id="simRateSeg">'+SIM_R.map(function(R){return '<button type="button" data-r="'+R+'" aria-pressed="'+(R===simRate())+'" style="min-height:36px;padding:0 6px">'+(R*100)+'%</button>'}).join('')+'</div></div>'+
+    '<div class="m" style="min-height:44px;display:flex;align-items:center;gap:6px;font-size:15px">8%<span class="xs mute" style="font-family:var(--sans)">與達成進度共用</span></div></div>'+
     (parseFloat(state.simWan)>0?'':'<p class="note" style="margin-top:6px">預設帶入近 12 個月平均每月投入，改過會記住。</p>')+
     '<div class="svgw" style="margin-top:10px"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="每月投入 '+fmtWan(C)+' 萬的成長試算">'+g+'</svg></div>'+
     '<div class="leg">'+RS.map(function(R){return '<span><i style="border-color:'+SIM_COL[SIM_R.indexOf(R)]+'"></i>'+(R*100)+'% 目標利率</span>'}).join('')+'<span><i style="border-color:#A78BFA"></i>我的位置</span></div>'+
@@ -1050,7 +1167,7 @@ function renderMore(){
   if(document.activeElement!==$('target'))$('target').value=Math.round(state.target/1000)/10;
   renderIdx();
   if(document.activeElement!==$('goalYr'))$('goalYr').value=goalYear();
-  renderAlSet();renderBackup();renderQuoteState();
+  renderAlSet();renderApSet();renderBackup();renderQuoteState();
 }
 function renderQuoteState(){
   var L=quotes.latest;
@@ -1075,6 +1192,9 @@ function renderPx(){
 }
 $('target').addEventListener('change',guard('目標',function(){var v=Math.round(parseFloat($('target').value)*10000);if(isFinite(v)&&v>0){state.target=v;scheduleSave();renderAll();toast('目標改為 '+wan(v))}else $('target').value=Math.round(state.target/1000)/10}));
 $('goalYr').addEventListener('change',guard('達標年份',function(){var y=parseInt($('goalYr').value,10),n=new Date().getFullYear();if(!(y>=n&&y<=n+60)){$('goalYr').value=goalYear();toast('請輸入 '+n+'～'+(n+60)+' 之間的年份');return}state.goalYr=y;scheduleSave();renderAll();toast('預計達標年份：'+y+' 年底')}));
+$('privBtn').addEventListener('click',function(){var on=!document.documentElement.classList.contains('priv');document.documentElement.classList.toggle('priv',on);this.setAttribute('aria-pressed',String(on));try{localStorage.setItem('dca-priv',on?'1':'0')}catch(e){}toast(on?'隱私模式已開啟，金額已模糊':'隱私模式已關閉')});
+(function(){try{if(localStorage.getItem('dca-priv')==='1'){document.documentElement.classList.add('priv');$('privBtn').setAttribute('aria-pressed','true')}}catch(e){}})();
+$('apSet').addEventListener('change',guard('目標配置',function(ev){var i=ev.target.closest('[data-ap]');if(!i)return;var c=i.dataset.ap,v=parseFloat(i.value);state.alloc=state.alloc||{};if(v>0&&v<=100)state.alloc[c]=Math.round(v*10)/10;else{delete state.alloc[c];i.value=''}scheduleSave();apSumUpd();var A=allocT();if(Math.abs(A.sum-100)<0.01)toast('目標配置已儲存，合計 100%');else toast('已儲存，目前合計 '+(Math.round(A.sum*10)/10)+'%，請調整到 100%','warn')}));
 $('hHold').addEventListener('click',guard('已處理',function(ev){var b=ev.target.closest('[data-ack]');if(!b)return;var c=b.dataset.ack,H=(state.alHit||{})[c]||{};state.alAck[c]=state.alAck[c]||{};Object.keys(H).forEach(function(k){state.alAck[c][k]=true});state.alerts[c]=alLv(c).filter(function(l){return !H[String(l)]});if(!state.alerts[c].length)delete state.alerts[c];state.alHit[c]={};scheduleSave();renderAll();toast(c+' 已處理，該價位提醒已移除，需要再提醒請到「更多」重新設定')}));
 $('alSet').addEventListener('change',guard('價格提醒',function(ev){var i=ev.target.closest('[data-al]');if(!i)return;var c=i.dataset.al,raw=i.value.trim();var l=raw?raw.split(/[,，、\s]+/).map(parseFloat).filter(function(x){return x>0}):[];if(raw&&!l.length){toast('請輸入大於 0 的價格');i.value=alLv(c).join(', ');return}l=l.filter(function(x,j,a){return a.indexOf(x)===j}).slice(0,6);state.alerts=state.alerts||{};if(l.length)state.alerts[c]=l;else delete state.alerts[c];i.value=alLv(c).join(', ');scheduleSave();renderHold();toast(l.length?c+' 提醒：'+alLv(c).join('、'):c+' 已取消提醒')}));
 document.addEventListener('gesturestart',function(e){e.preventDefault()});
