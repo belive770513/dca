@@ -25,6 +25,24 @@
   --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
 }
 [hidden]{display:none!important}
+.hudc{position:relative;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#0f2230 0%,#0B1017 70%);border-color:#123040}
+.hudc .corner{position:absolute;width:14px;height:14px;border:2px solid var(--acc);opacity:.8}
+.hudc .tl{top:8px;left:8px;border-right:0;border-bottom:0}.hudc .tr{top:8px;right:8px;border-left:0;border-bottom:0}
+.hudc .bl{bottom:8px;left:8px;border-right:0;border-top:0}.hudc .br{bottom:8px;right:8px;border-left:0;border-top:0}
+.hudc .scan{position:absolute;left:0;right:0;height:40px;background:linear-gradient(transparent,rgba(34,211,238,.08),transparent);top:-40px;animation:hscan 3.5s linear infinite;pointer-events:none}
+@keyframes hscan{to{top:110%}}
+.hudl{font-family:"Share Tech Mono",var(--mono);color:var(--acc);font-size:12px;letter-spacing:.08em;display:flex;justify-content:space-between;padding:0 6px}
+.hudc .eta{font-family:"Share Tech Mono",var(--mono);font-size:30px;color:var(--ink);margin:4px 6px 6px}
+.hudc .eta small{font-size:12px;color:var(--vio);margin-left:6px}
+.hleg{display:flex;gap:12px;font-family:"Share Tech Mono",var(--mono);font-size:11px;color:var(--mute);padding:2px 6px}
+.hleg i{display:inline-block;width:12px;height:2px;vertical-align:middle;margin-right:4px}
+.hwarn{text-align:right;font-size:10px;color:var(--faint);padding:2px 6px 0}
+.hwarn::before{content:"⚠ ";color:var(--warn)}
+.hdraw{stroke-dasharray:var(--len,2000);stroke-dashoffset:var(--len,2000)}
+.play .hdraw{animation:hdr 1.4s cubic-bezier(.4,0,.2,1) forwards}.play .hd2{animation-delay:.5s}
+.hfade{opacity:0}.play .hfade{animation:hfi .5s 1.4s forwards}
+@keyframes hdr{to{stroke-dashoffset:0}}@keyframes hfi{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.hudc .scan{animation:none}.play .hdraw,.play .hfade{animation-duration:.01s;animation-delay:0s}}
 #splash{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .35s ease}
 #splash.out{opacity:0;pointer-events:none}
 #splash .sw{font-family:Rajdhani,var(--sans);font-weight:700;letter-spacing:.14em;font-size:64px;background:linear-gradient(90deg,#22D3EE,#A78BFA);-webkit-background-clip:text;background-clip:text;color:transparent;clip-path:inset(0 100% 0 0);animation:spWipe .8s cubic-bezier(.6,0,.2,1) .15s forwards}
@@ -173,7 +191,9 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
 .tw table{min-width:0}
 .kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin-top:10px}
 .kv div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:8px 10px;background:var(--s2);border-radius:10px}
-.kv dt{font-size:12px;color:var(--mute)} .kv dd{margin:0;font-family:var(--mono);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.kv dt{font-size:12px;color:var(--mute)}
+.kv2 div{display:block}.kv2 dt{white-space:nowrap}.kv2 dd{text-align:left;margin-top:2px;font-size:16px}
+.kv2 div{display:block}.kv2 dt{white-space:nowrap}.kv2 dd{text-align:left;margin-top:2px;font-size:16px} .kv dd{margin:0;font-family:var(--mono);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -783,23 +803,53 @@ function renderCv(){
 function renderGoal(){
   var ser=goalSeries(),T=state.target;
   if(!ser.length){$('chartBody').innerHTML='<div class="empty">'+(state.entries.length?'還沒有任何月份湊齊價格。自動報價跑過一次後就會出現。':'還沒有買進紀錄。')+'</div>';return}
-  var L=ser[ser.length-1],pct=L.val/T*100;
+  var L=ser[ser.length-1],pct=L.val/T*100,RU=rateUsed(L.val),r=RU.r,C=avg12(),mi=Math.pow(1+r,1/12)-1;
   var miles=[25,50,75,100].map(function(x){
     var th=T*x/100,hit=null;for(var i=0;i<ser.length;i++)if(ser[i].val>=th){hit=ser[i].m;break}
     var pj=L.val>=th?'<span class="up">已達成</span>':projectSpan(L.val,th);
     return '<tr><td>'+x+'%</td><td>'+Math.round(th/10000).toLocaleString('zh-TW')+' 萬</td><td>'+(hit?monthEndDate(hit):'—')+'</td><td style="text-align:left">'+pj+'</td></tr>'}).join('');
-  var show=ser.slice(-12),W=340,H=170,Lx=34,R=8,Tp=10,B=24,iw=W-Lx-R,ih=H-Tp-B,n=show.length,maxP=0;
-  show.forEach(function(r){maxP=Math.max(maxP,r.val/T*100)});maxP=maxP<=5?5:maxP<=10?10:maxP<=25?25:Math.ceil(maxP/25)*25;
-  function Y(p){return Tp+ih-ih*Math.min(p,maxP)/maxP}
-  var g='',ticks=4;for(var k=0;k<=ticks;k++){var p=maxP*k/ticks;g+='<line x1="'+Lx+'" x2="'+(W-R)+'" y1="'+Y(p)+'" y2="'+Y(p)+'" stroke="'+(k?'#1F2A37':'#2C3A4A')+'"/><text x="'+(Lx-4)+'" y="'+(Y(p)+3)+'" text-anchor="end">'+(maxP<25?p.toFixed(1):p.toFixed(0))+'%</text>'}
-  var bw=Math.min(18,iw/n*.6),step=Math.max(1,Math.ceil(n/6));
-  show.forEach(function(r,i){var p=r.val/T*100,cx=Lx+iw*(i+.5)/n,y=Y(p);g+='<rect x="'+(cx-bw/2)+'" y="'+y+'" width="'+bw+'" height="'+Math.max(1,Tp+ih-y)+'" rx="3" fill="'+(i===n-1?'#22D3EE':'#1F6F7C')+'"><title>'+r.m+' '+p.toFixed(2)+'%</title></rect>';if(i%step===0||i===n-1)g+='<text x="'+cx+'" y="'+(H-8)+'" text-anchor="middle">'+rocS(r.m)+'</text>'});
-  var rowsT=ser.slice().reverse().map(function(r,i,a){var p=r.val/T*100,pv=a[i+1],d=pv?p-pv.val/T*100:null;return '<tr><td>'+rocS(r.m)+'</td><td>'+n0(r.val)+'</td><td>'+n0(r.cost)+'</td><td>'+p.toFixed(2)+'%</td><td class="'+cls(d)+'">'+(d==null?'—':sign(d)+Math.abs(d).toFixed(2))+'</td></tr>'}).join('');
-  $('chartBody').innerHTML='<section class="card"><div class="rowb"><span class="small mute">截至 '+roc(L.m)+'</span><span class="small mute">目標 '+wan(T)+'</span></div>'+
-    '<div style="display:flex;align-items:baseline;gap:8px;margin:10px 0"><span class="big" style="font-size:38px">'+(pct<10?pct.toFixed(2):pct.toFixed(1))+'%</span><span class="small mute">持股市值 <span class="m" style="color:var(--ink)">'+n0(L.val)+'</span></span></div>'+
-    '<div class="svgw"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="每月達成率">'+g+'</svg></div>'+(ser.length>12?'<p class="note">圖表顯示最近 12 個月，完整數字見下表。</p>':'')+'</section>'+
-    '<section class="card"><h2 style="margin-bottom:6px">里程碑</h2><div class="tw"><table><thead><tr><th>里程碑</th><th>門檻</th><th>首次達成日</th><th style="text-align:left">所需時間</th></tr></thead><tbody>'+miles+'</tbody></table></div><p class="note" style="margin-top:8px">依近 12 個月平均投入本金，以年化 8% 為基礎，從目前累積市值往後推算，試算並非結果預期。</p></section>'+
-    '<section class="card"><h2 style="margin-bottom:6px">每月達成率</h2><div class="tw"><table><thead><tr><th>日期</th><th>市值</th><th>投入</th><th>達成率</th><th>較上月</th></tr></thead><tbody>'+rowsT+'</tbody></table></div></section>';
+  // 預測：從本月往後逐月推算到目標
+  var proj=[{k:0,v:L.val,c:L.cost}],v=L.val,cst=L.cost,k=0,hitK=null;
+  while(k<600){v=v*(1+mi)+C;cst+=C;k++;proj.push({k:k,v:v,c:cst});if(v>=T){hitK=k;break}}
+  var past=ser.length-1,total=past+proj.length-1;
+  var W=320,H=176,Lx=30,R=10,Tp=12,B=22,iw=W-Lx-R,ih=H-Tp-B,top=T*1.1;
+  function X(i){return Lx+iw*i/Math.max(1,total)}function Y(val){return Tp+ih-ih*Math.max(0,Math.min(val,top))/top}
+  var g='';
+  for(var gx=Lx;gx<=W-R+.5;gx+=24)g+='<line x1="'+gx+'" x2="'+gx+'" y1="'+Tp+'" y2="'+(Tp+ih)+'" stroke="#12303A"/>';
+  [0,.25,.5,.75,1].forEach(function(f){var y=Y(T*f);g+='<line x1="'+Lx+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="#12303A"/><text x="'+(Lx-4)+'" y="'+(y+3)+'" text-anchor="end" style="fill:#3E7C8C">'+Math.round(T*f/10000)+'</text>'});
+  var start=ser[0].m,yStep=total>240?5:total>96?2:1;
+  for(var yy=0;yy*12<=total;yy+=yStep){g+='<text x="'+X(yy*12)+'" y="'+(H-6)+'" text-anchor="'+(yy===0?'start':'middle')+'" style="fill:#3E7C8C">'+(+addMonths(start+'-01',yy*12).slice(0,4)-1911)+'</text>'}
+  g+='<line x1="'+Lx+'" x2="'+(W-R)+'" y1="'+Y(T)+'" y2="'+Y(T)+'" stroke="#22D3EE" opacity=".8"/>';
+  function pth(pts){return pts.map(function(q,i){return (i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)}).join(' ')}
+  var stp=Math.max(1,Math.floor(proj.length/150)),av=ser.map(function(q,i){return [X(i),Y(q.val)]}),ac=ser.map(function(q,i){return [X(i),Y(q.cost)]});
+  var pv=av.slice(),pc=ac.slice();for(var j=stp;j<proj.length;j+=stp){pv.push([X(past+proj[j].k),Y(proj[j].v)]);pc.push([X(past+proj[j].k),Y(proj[j].c)])}
+  var lj=proj[proj.length-1];pv.push([X(past+lj.k),Y(lj.v)]);pc.push([X(past+lj.k),Y(lj.c)]);
+  g+='<path class="hdraw hd2" d="'+pth(pc)+'" fill="none" stroke="#F5B83D" stroke-width="1" opacity=".7"/>';
+  g+='<path class="hdraw" d="'+pth(pv)+'" fill="none" stroke="#22D3EE" stroke-width="2"/>';
+  if(ser.length>1)g+='<path d="'+pth(av)+'" fill="none" stroke="#E6EDF3" stroke-width="2.4"/>';
+  var cx=X(past),cy=Y(L.val);g+='<g stroke="#22D3EE" stroke-width="1"><line x1="'+(cx-10)+'" x2="'+(cx+10)+'" y1="'+cy+'" y2="'+cy+'"/><line x1="'+cx+'" x2="'+cx+'" y1="'+(cy-10)+'" y2="'+(cy+10)+'"/><circle cx="'+cx+'" cy="'+cy+'" r="6" fill="none"/></g>';
+  var hitDate='—',cd='';
+  if(hitK!=null){var d=new Date();d.setMonth(d.getMonth()+hitK);hitDate=d.getFullYear()+'/'+pad(d.getMonth()+1);cd='−'+(Math.floor(hitK/12)?Math.floor(hitK/12)+'Y':'')+(hitK%12)+'M';
+    var ex=X(total),ey=Y(T);g+='<g class="hfade"><rect x="'+(ex-7)+'" y="'+(ey-7)+'" width="14" height="14" fill="none" stroke="#A78BFA" stroke-width="1.5" transform="rotate(45 '+ex+' '+ey+')"/><text x="'+(ex-12)+'" y="'+(ey+18)+'" text-anchor="end" style="fill:#A78BFA;font-family:\'Share Tech Mono\',monospace;font-size:10px">LOCK '+hitDate.replace('/','.')+'</text></g>'}
+  var elapsed=Math.max(1,ser.length),avgP=pct/elapsed;
+  var prev=ser.length>1?ser[ser.length-2]:{val:0,cost:0},prev2=ser.length>2?ser[ser.length-3]:{val:0,cost:0};
+  var mP=(L.val-prev.val)/T*100,lastP=ser.length>1?(prev.val-prev2.val)/T*100:null;
+  var prinP=(L.cost-prev.cost)/T*100,mktP=mP-prinP;
+  function sp(x,d){return (x>=0?'+':'−')+Math.abs(x).toFixed(d==null?2:d)+'%'}
+  var rTxt=(r*100).toFixed(1)+'%'+(RU.real?'':'（資料不足，暫用 8%）');
+  $('chartBody').innerHTML='<section class="card hudc" id="hudCard"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="scan"></div>'+
+    '<div class="hudl"><span>HODL://TARGET '+wan(T).replace(' ','')+'</span><span>ACH '+(pct<10?pct.toFixed(2):pct.toFixed(1))+'%</span></div>'+
+    '<div class="eta">ETA '+(hitK==null?'50Y+':hitDate.replace('/','.'))+'<small>'+cd+'</small></div>'+
+    '<div class="svgw"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="真實投入與市值，以及預測達成曲線">'+g+'</svg></div>'+
+    '<div class="hleg"><span><i style="background:#E6EDF3"></i>實際市值</span><span><i style="background:#22D3EE"></i>預測市值</span><span><i style="background:#F5B83D"></i>投入本金</span></div>'+
+    (ser.length<12?'<div class="hwarn">資料月份不足，圖表可能失真</div>':'')+
+    '<dl class="kv kv2" style="margin-top:12px"><div><dt>真實年化報酬</dt><dd class="'+cls(r)+'">'+(r>=0?'+':'−')+rTxt.replace(/^-/,'')+'</dd></div><div><dt>平均每月投入</dt><dd>'+n0(C)+'</dd></div>'+
+    '<div><dt>平均每月進度</dt><dd>'+sp(avgP)+'</dd></div><div><dt>本月進度</dt><dd class="'+cls(mP)+'">'+sp(mP)+'</dd></div></dl>'+
+    '<p class="note" style="margin-top:10px;line-height:1.7">本月進度 '+sp(mP)+(lastP==null?'':'（上月 '+sp(lastP)+'，'+(mP-lastP>=0?'多 ':'少 ')+Math.abs(mP-lastP).toFixed(2)+'%）')+'：投入本金貢獻 <b class="m" style="color:var(--ink)">'+sp(prinP)+'</b>、市場漲跌貢獻 <b class="m '+cls(mktP)+'">'+sp(mktP)+'</b>。照目前速度，約 <b class="m" style="color:#A78BFA">'+(hitK==null?'50 年以上':hitDate)+'</b> 達標。</p>'+
+    '<p class="note" style="margin-top:6px">預測用真實年化報酬 '+rTxt+'（依每筆實際買進的時間與金額計算）、近 12 個月平均投入。投資期間越短，這個數字波動越大。</p></section>'+
+    '<section class="card"><h2 style="margin-bottom:6px">里程碑</h2><div class="tw"><table><thead><tr><th>里程碑</th><th>門檻</th><th>首次達成日</th><th style="text-align:left">所需時間</th></tr></thead><tbody>'+miles+'</tbody></table></div><p class="note" style="margin-top:8px">依近 12 個月平均投入本金，以真實年化報酬 '+rTxt+' 從目前累積市值往後推算，試算並非結果預期。</p></section>'+
+    '<section class="card"><h2 style="margin-bottom:6px">每月達成率</h2><div class="tw"><table><thead><tr><th>日期</th><th>市值</th><th>投入</th><th>達成率</th><th>較上月</th></tr></thead><tbody>'+(function(){return ser.slice().reverse().map(function(q,i,a){var p=q.val/T*100,pv2=a[i+1],d=pv2?p-pv2.val/T*100:null;return '<tr><td>'+rocS(q.m)+'</td><td>'+n0(q.val)+'</td><td>'+n0(q.cost)+'</td><td>'+p.toFixed(2)+'%</td><td class="'+cls(d)+'">'+(d==null?'—':sign(d)+Math.abs(d).toFixed(2))+'</td></tr>'}).join('')})()+'</tbody></table></div></section>';
+  var hc=$('hudCard');if(hc){hc.querySelectorAll('.hdraw').forEach(function(p){p.style.setProperty('--len',Math.ceil(p.getTotalLength()))});hc.classList.add('play')}
 }
 var SIM_R=[.08,.12,.18],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
 function fmtWan(v){return (Math.round(v/1000)/10).toLocaleString('zh-TW',{maximumFractionDigits:1})}
@@ -812,8 +862,19 @@ function monthEndDate(m){
   if(m===curMonth()&&quotes.latest&&quotes.latest.asOf)return quotes.latest.asOf.replace(/-/g,'/');
   var d=new Date(+m.slice(0,4),+m.slice(5,7),0);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()-1);return fmtD(d);
 }
+function realRate(v0){
+  // 年化資金加權報酬（XIRR）：每筆買進當作流出，今天的市值當作流入
+  if(!(v0>0)||!state.entries.length)return null;
+  var now=new Date(today()).getTime(),cf=state.entries.map(function(e){return {t:(now-new Date(e.date).getTime())/864e5/365,a:-amount(e)}});
+  cf.push({t:0,a:v0});
+  function npv(r){var s=0;cf.forEach(function(c){s+=c.a*Math.pow(1+r,c.t)});return s}
+  var lo=-0.99,hi=100,flo=npv(lo),fhi=npv(hi);if(!isFinite(flo)||!isFinite(fhi)||flo*fhi>0)return null;
+  for(var k=0;k<200;k++){var mid=(lo+hi)/2,fm=npv(mid);if(Math.abs(fm)<1e-6)break;if(fm*flo>0){lo=mid;flo=fm}else hi=mid}
+  return (lo+hi)/2;
+}
+function rateUsed(v0){var r=realRate(v0);return {r:r==null?.08:r,real:r!=null}}
 function projectSpan(v0,th){
-  var C=avg12(),i=Math.pow(1.08,1/12)-1,v=v0,k=0;
+  var C=avg12(),i=Math.pow(1+rateUsed(v0).r,1/12)-1,v=v0,k=0;
   if(!(C>0)&&v0<=0)return '—';
   while(v<th&&k<600){var pv=v;v=v*(1+i)+C;k++;if(v>=th){
     var f=(th-pv)/(v-pv),now=new Date(),d=new Date(now);d.setMonth(d.getMonth()+k-1);d.setDate(d.getDate()+Math.round(f*30.44));
