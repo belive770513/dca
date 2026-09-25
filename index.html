@@ -2,8 +2,18 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>HODL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>HODL累積帳戶</title>
+<meta name="description" content="定期定額記帳，自動抓台股報價，手機和電腦同步同一份資料。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="HODL累積帳戶">
+<meta property="og:title" content="HODL累積帳戶">
+<meta property="og:description" content="定期定額記帳，自動抓台股報價，手機和電腦同步同一份資料。">
+<meta property="og:url" content="https://belive770513.github.io/dca/">
+<meta property="og:image" content="https://belive770513.github.io/dca/hodl-og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="hodl-192.png">
 <link rel="apple-touch-icon" href="hodl-apple-180.png">
@@ -13,7 +23,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&family=DM+Mono:wght@400;500&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&family=DM+Mono:wght@400;500&family=Rajdhani:wght@600;700&family=Michroma&family=Share+Tech+Mono&display=swap">
 <style>
 :root{
   color-scheme:dark;
@@ -25,6 +35,15 @@
   --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
 }
 [hidden]{display:none!important}
+.sig{font-family:Michroma,var(--sans);font-size:9px;letter-spacing:.2em;color:#6B7A8C}.sig b{color:var(--ink);font-weight:400}
+.sigfoot{text-align:center;padding:18px 0 4px}.sigfoot .sig{font-size:10px}.sigfoot .v{font-size:10px;color:#4B5B6B;margin-top:5px;font-family:"Share Tech Mono",var(--mono);letter-spacing:.12em}
+.gauge .ml.lo{top:auto;bottom:-14px}
+.hxw{position:relative;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.hxw svg{touch-action:pan-y;cursor:crosshair}
+.hxt{position:absolute;top:4px;min-width:132px;background:rgba(5,12,18,.92);border:1px solid #1F6F7C;border-radius:8px;padding:6px 8px;pointer-events:none;font-family:"Share Tech Mono",var(--mono);font-size:11px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.hxm{color:var(--acc);margin-bottom:3px;letter-spacing:.06em}
+.hxr{display:flex;justify-content:space-between;gap:10px;color:var(--mute);line-height:1.6}
+.hxr i{display:inline-block;width:8px;height:2px;vertical-align:middle;margin-right:4px}
+.hxr b{color:var(--ink);font-weight:500;font-family:var(--mono)}
 .hudc{position:relative;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#0f2230 0%,#0B1017 70%);border-color:#123040}
 .hudc .corner{position:absolute;width:14px;height:14px;border:2px solid var(--acc);opacity:.8}
 .hudc .tl{top:8px;left:8px;border-right:0;border-bottom:0}.hudc .tr{top:8px;right:8px;border-left:0;border-bottom:0}
@@ -73,6 +92,12 @@ input[type=date]::-webkit-date-and-time-value,input[type=month]::-webkit-date-an
 .ver{color:#A78BFA;justify-self:end}
 .term{background:#05090D;border-color:#12303A}
 .termT{font-family:"Share Tech Mono",var(--mono);color:var(--acc);font-size:13px;letter-spacing:.08em;margin-bottom:6px}
+.list>div.alrt{display:block;border-top:none;padding:0 0 12px}
+.alT{font-family:"Share Tech Mono",var(--mono);font-size:12.5px;line-height:1.6;color:#FBBF24;background:#05090D;border:1px dashed rgba(251,191,36,.55);border-radius:10px;padding:8px 10px;box-shadow:0 0 14px rgba(251,191,36,.12)}
+.alT .g{color:var(--mute)}.alT .k{display:inline-block;width:7px;height:13px;background:#FBBF24;vertical-align:-2px;margin-left:4px;animation:blink 1s steps(1) infinite}
+.alT .rw{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px}
+.alT button{font:inherit;font-size:12px;color:#FBBF24;background:none;border:1px solid rgba(251,191,36,.6);border-radius:7px;padding:3px 9px;min-height:28px}
+.alSet .setrow label{line-height:1.35}
 #hRules p{margin:4px 0;font-family:"Share Tech Mono",var(--sans);font-size:13px;color:#9FE8F2;line-height:1.55}
 #hRules p::before{content:"$ ";color:var(--down)}
 #hRules .cur{display:inline-block;width:8px;height:14px;background:var(--acc);vertical-align:-2px;margin-left:4px;animation:blink 1s steps(1) infinite}
@@ -80,7 +105,7 @@ input[type=date]::-webkit-date-and-time-value,input[type=month]::-webkit-date-an
 input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;display:block;text-align:left}
 input::-webkit-date-and-time-value{text-align:left}
 .grid2>*{min-width:0}
-html,body{height:100%;overflow-x:hidden;max-width:100%}
+html,body{height:100%;overflow-x:hidden;max-width:100%;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{overscroll-behavior-x:none}
 .app{overflow-x:hidden}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-tap-highlight-color:transparent}
@@ -205,13 +230,13 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
 <script src="config.js"></script>
 </head>
 <body>
-<div id="splash" role="img" aria-label="HODL"><div class="sw">HODL</div><div class="sl"></div><div class="st">長期持有・時間站在你這邊</div></div>
+<div id="splash" role="img" aria-label="HODL"><div class="sw">HODL</div><div class="sl"></div><div class="st">長期持有・時間站在你這邊</div><div class="sig" style="position:absolute;right:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px))">CREATED BY <b>BELIVE</b></div></div>
 <script>(function(){var sp=document.getElementById('splash'),done=false;function hide(){if(done)return;done=true;sp.classList.add('out');setTimeout(function(){sp.remove()},400)}
-sp.addEventListener('click',hide);setTimeout(hide,1700);})();</script>
+sp.addEventListener('click',hide);setTimeout(hide,2000);})();</script>
 
 <div class="login" id="login" hidden>
   <form id="loginForm" novalidate>
-    <div><div class="brand"><i>HODL</i>主動帳戶</div><h1 style="margin:2px 0 4px;font-size:24px">HODL</h1><p class="note">登入後，手機和電腦看到的是同一份資料。</p></div>
+    <div><div class="brand"><i>HODL</i>累積帳戶</div><h1 style="margin:2px 0 4px;font-size:24px">HODL</h1><p class="note">登入後，手機和電腦看到的是同一份資料。</p></div>
     <label class="f">Email<input class="inp" type="email" id="lgEmail" autocomplete="username" inputmode="email"></label>
     <label class="f">密碼（至少 6 碼）<input class="inp" type="password" id="lgPass" autocomplete="current-password"></label>
     <div class="err" id="lgErr" aria-live="polite"></div>
@@ -227,7 +252,7 @@ sp.addEventListener('click',hide);setTimeout(hide,1700);})();</script>
   <!-- 總覽 -->
   <section class="view" id="v-home" aria-label="總覽">
     <div class="hd2">
-      <span class="brand"><i>HODL</i>主動帳戶</span><span class="ver">VER 1.0</span>
+      <span class="brand"><i>HODL</i>累積帳戶</span><span class="ver">VER 1.0</span>
       <h1>總覽</h1><span class="chip" id="saveChip" style="justify-self:end"><span class="dot" id="saveDot"></span><span id="status">載入中…</span></span>
     </div>
     <section class="card" aria-label="目標達成進度">
@@ -252,6 +277,7 @@ sp.addEventListener('click',hide);setTimeout(hide,1700);})();</script>
       <div class="row" style="padding:10px 0 4px"><div><h2>持有概況</h2><div class="xs mute" id="qMeta"></div></div><button type="button" class="tiny" id="btnQuote" style="color:var(--acc);border-color:#1F4E58">更新報價</button></div>
       <div class="list" id="hHold"></div>
     </section>
+    <div class="sigfoot"><div class="sig">CREATED BY <b>BELIVE</b></div><div class="v">HODL VER 1.0</div></div>
   </section>
 
   <!-- 記一筆 -->
@@ -329,7 +355,7 @@ sp.addEventListener('click',hide);setTimeout(hide,1700);})();</script>
   <section class="view" id="v-chart" aria-label="圖表" hidden>
     <div class="hd"><h1>圖表</h1><select class="inp sm" id="cvSym" aria-label="標的" style="width:auto"></select></div>
     <div class="seg soft" role="tablist" aria-label="圖表分類">
-      <button type="button" role="tab" data-t="cv" aria-selected="true">損益比</button>
+      <button type="button" role="tab" data-t="cv" aria-selected="true">盈虧</button>
       <button type="button" role="tab" data-t="goal" aria-selected="false">達成進度</button>
       <button type="button" role="tab" data-t="sim" aria-selected="false">目標試算</button>
     </div>
@@ -355,7 +381,14 @@ sp.addEventListener('click',hide);setTimeout(hide,1700);})();</script>
       <p class="note" style="margin-top:6px" id="qMsg"></p>
     </section>
 
+    <section class="card alSet" aria-label="價格提醒" style="padding-block:4px">
+      <div class="rowb" style="padding-top:10px"><h2>價格提醒</h2></div>
+      <p class="xs mute" style="margin:2px 0 4px">現價 ≤ 設定價時，總覽持有概況會出現警報，按「已處理」才消失。每檔可填多個價格，用逗號分隔；留空＝不提醒。</p>
+      <div id="alSet"></div>
+    </section>
+
     <section class="card" aria-label="設定" style="padding-block:4px">
+      <div class="setrow"><label for="ixLv" style="white-space:nowrap;line-height:1.35">加碼點（%）<br><span class="xs mute">逗號分隔，最多 6 個</span></label><input class="inp sm m" type="text" id="ixLv" inputmode="decimal" placeholder="15, 25" style="width:130px;min-width:0;text-align:right"></div>
       <div class="setrow"><label for="target" style="white-space:nowrap">HODL目標（萬）</label><input class="inp sm m" type="number" id="target" step="1" min="1" inputmode="decimal" style="width:96px;min-width:0;text-align:right"></div>
       <div class="setrow" style="padding-block:8px"><span style="line-height:1.35">大盤創高價<br><span class="xs mute">（近12個月內）</span></span><span class="m" id="ixHighTxt" style="text-align:right;line-height:1.35">—</span></div>
       <div class="setrow" style="padding-block:8px"><span style="line-height:1.35">最近收盤價<br><span class="xs mute">&nbsp;</span></span><span class="m" id="ixNowTxt" style="text-align:right;line-height:1.35">—</span></div>
@@ -416,7 +449,7 @@ var SYMS=[],CODES=[];
 function setSyms(list){SYMS=(list||[]).filter(function(x){return x&&x.c});CODES=SYMS.map(function(x){return x.c})}
 var BACKUP_BASE='2026-09-21', SIM_START=null;
 function simStart(){if(SIM_START)return SIM_START;var ms=monthList();return ms.length?ms[0]:curMonth()}
-var state={entries:[],prices:{},checks:{},income:[],mprices:{},backup:{},target:3330000,idx:{},priceAt:{},syms:null,rules:null};
+var state={entries:[],prices:{},checks:{},income:[],mprices:{},backup:{},target:3330000,idx:{},priceAt:{},syms:null,rules:null,alerts:{},alHit:{},alAck:{}};
 var quotes={latest:null,monthEnd:{}};
 var ref=null, saveTimer=null, dirty=false, saveTry=0, loaded=false;
 var ui={view:'home',addMode:'buy',sym:'00685L',kind:'dca',src:'job',recTab:'buy',chartTab:'cv',simC:30000,simPr:false,simGn:false,expRec:{},recAuto:true,expSnap:{}};
@@ -455,7 +488,7 @@ function toast(t){var el=$('toast');el.textContent=t;el.classList.add('on');clea
 function setStatus(t,kind){$('status').textContent=t;$('saveDot').className='dot'+(kind?' '+kind:'')}
 
 /* ---------- 儲存 ---------- */
-function payload(){return {entries:state.entries,prices:state.prices,checks:state.checks,income:state.income,mprices:state.mprices,backup:state.backup,target:state.target,idx:state.idx,priceAt:state.priceAt,qLatest:quotes.latest||null,qMonth:quotes.monthEnd||{},syms:state.syms||[],rules:state.rules||[],simWan:state.simWan||null,simRate:state.simRate||null,idxHist:state.idxHist||{},idxDone:state.idxDone||{}}}
+function payload(){return {entries:state.entries,prices:state.prices,checks:state.checks,income:state.income,mprices:state.mprices,backup:state.backup,target:state.target,idx:state.idx,priceAt:state.priceAt,qLatest:quotes.latest||null,qMonth:quotes.monthEnd||{},syms:state.syms||[],rules:state.rules||[],simWan:state.simWan||null,simRate:state.simRate||null,ixLv:state.ixLv||null,alerts:state.alerts||{},alHit:state.alHit||{},alAck:state.alAck||{},idxHist:state.idxHist||{},idxDone:state.idxDone||{}}}
 function scheduleSave(){dirty=true;setStatus('儲存中…','w');clearTimeout(saveTimer);saveTimer=setTimeout(doSave,500)}
 function doSave(){
   clearTimeout(saveTimer);
@@ -483,7 +516,7 @@ function adopt(d){
   state.syms=Array.isArray(d.syms)?thaw(d.syms,[]):(had?thaw(DEFAULT_SYMS,[]):[]);
   state.rules=Array.isArray(d.rules)?thaw(d.rules,[]):(had?DEFAULT_RULES.slice():[]);
   setSyms(state.syms);
-  state.simWan=d.simWan||null;state.simRate=d.simRate||null;state.idxHist=thaw(d.idxHist,{})||{};state.idxDone=thaw(d.idxDone,{})||{};
+  state.simWan=d.simWan||null;state.simRate=d.simRate||null;state.ixLv=d.ixLv||null;state.alerts=thaw(d.alerts,{})||{};state.alHit=thaw(d.alHit,{})||{};state.alAck=thaw(d.alAck,{})||{};state.idxHist=thaw(d.idxHist,{})||{};state.idxDone=thaw(d.idxDone,{})||{};
   if(d.qLatest&&(!quotes.latest||(d.qLatest.asOf||'')>(quotes.latest.asOf||'')))quotes.latest=thaw(d.qLatest,null);
   var qm=thaw(d.qMonth,{});Object.keys(qm).forEach(function(m){var a=quotes.monthEnd[m],b=qm[m];if(!a||(b.final&&!a.final)||(!a.final&&(b.asOf||'')>(a.asOf||'')))quotes.monthEnd[m]=b});
 }
@@ -554,7 +587,7 @@ function renderHome(){
   $('hTiles').innerHTML=
     '<div class="tile"><dt>市值</dt><dd>'+(val==null?'—':n0(val))+'</dd></div>'+
     '<div class="tile"><dt>累計投入</dt><dd>'+n0(cost)+'</dd></div>'+
-    '<div class="tile"><dt>價差損益</dt><dd class="'+cls(gain)+'">'+(gain==null?'—':sign(gain)+abs0(gain))+(ret==null?'':'<small>'+sign(ret)+Math.abs(ret).toFixed(2)+'%</small>')+'</dd></div>';
+    '<div class="tile"><dt>盈虧</dt><dd class="'+cls(gain)+'">'+(gain==null?'—':sign(gain)+abs0(gain))+(ret==null?'':'<small>'+sign(ret)+Math.abs(ret).toFixed(2)+'%</small>')+'</dd></div>';
   var cm=curMonth(),y12=addMonths(cm+'-01',-11).slice(0,7),l12=0;state.entries.forEach(function(e){if(e.date.slice(0,7)>=y12)l12+=amount(e)});
   $('hMore').innerHTML='<div>'+(val!=null&&val>=T?'已超過目標':'距離目標')+'<b>'+(val==null?'—':n0(Math.abs(T-val)))+'</b></div><div>本月已投入<b>'+n0(monthInvest(cm))+'</b></div><div>近 12 月投入<b>'+n0(l12)+'</b></div>';
   renderIdx();renderHold();
@@ -573,6 +606,7 @@ function idxHigh(){
   var nw=idxNow();if(nw&&nw.date&&nw.date>=from&&(!best||nw.v>best.v))best={v:nw.v,date:nw.date};
   return best;
 }
+function ixLevels(){var l=(state.ixLv||[15,25]).filter(function(x){return x>0&&x<90});l=l.filter(function(x,i){return l.indexOf(x)===i}).sort(function(a,b){return a-b}).slice(0,6);return l.length?l:[15,25]}
 function renderIdx(){
   var hi=idxHigh(),nw=idxNow();
   function dS(d){return d?(+d.slice(0,4))+'/'+(+d.slice(5,7))+'/'+(+d.slice(8,10)):''}
@@ -580,29 +614,55 @@ function renderIdx(){
   var nwD=nw?(nw.date||(quotes.latest&&quotes.latest.asOf?'':'')):'';
   $('ixNowTxt').innerHTML=nw?n0(nw.v)+'<br><span class="xs mute">('+(nw.date?dS(nw.date):'前一交易日')+')</span>':'—';
   if(!hi||!nw){$('ixMeta').textContent='';$('ixBody').innerHTML='<p class="note" style="margin-top:8px">正在向證交所抓近一年的加權指數收盤價，第一次約需 20 秒。</p>';return}
-  var H=hi.v,dd=(nw.v/H-1)*100,p15=H*.85,p25=H*.75,st,c='down';
-  if(dd<=-25)st='已回檔 25% 以上';
-  else if(dd<=-15)st='已回檔 15% 以上';
-  else{st='距 −15% 加碼點還差 '+(dd+15).toFixed(1)+'%（'+n0(nw.v-p15)+' 點）';c=dd<0?'down':'up'}
+  var H=hi.v,dd=(nw.v/H-1)*100,lv=ixLevels(),mx=Math.ceil(lv[lv.length-1]*1.2/5)*5,st,c='down',hit=null,next=null;
+  lv.forEach(function(x){if(-dd>=x)hit=x;else if(next==null)next=x});
+  if(hit!=null)st='已回檔 '+hit+'% 以上'+(next!=null?'，下一個加碼點 −'+next+'%':'');
+  else{st='距 −'+next+'% 加碼點還差 '+(dd+next).toFixed(1)+'%（'+n0(nw.v-H*(1-next/100))+' 點）';c=dd<0?'down':'up'}
   $('ixMeta').innerHTML='近一年高點 <span class="m">'+n0(H)+'</span> · '+esc(nw.label)+' <span class="m">'+n0(nw.v)+'</span>';
-  var fill=Math.max(0,Math.min(100,-dd/30*100));
+  var fill=Math.max(0,Math.min(100,-dd/mx*100)),cols=['#F5B83D','#FB923C','#FF8A65','#FF6B6F','#F472B6','#E879F9'];
+  var mk='',ml='';lv.forEach(function(x,i){var pos=x/mx*100,col=cols[Math.min(i,cols.length-1)];mk+='<div class="mk" style="left:'+pos+'%;background:'+col+'"></div>';
+    ml+='<span class="ml'+(i%2?' lo':'')+'" style="left:'+Math.min(92,Math.max(8,pos))+'%;color:'+col+'">−'+x+'% '+n0(H*(1-x/100))+'</span>'});
   $('ixBody').innerHTML='<div style="display:flex;align-items:baseline;gap:8px;margin-top:8px;flex-wrap:wrap"><span class="m '+c+'" style="font-size:26px;font-weight:600">'+sign(dd)+Math.abs(dd).toFixed(1)+'%</span><span class="small mute">'+esc(st)+'</span></div>'+
-    '<div class="gauge" role="img" aria-label="回檔 '+dd.toFixed(1)+'%"><div class="tr"></div><div class="fl" style="width:'+fill+'%;background:'+(dd<=-15?'var(--up)':'var(--down)')+'"></div>'+
-    '<div class="mk" style="left:50%;background:var(--warn)"></div><div class="mk" style="left:83.3%;background:var(--up)"></div>'+
-    '<span class="ml" style="left:50%;color:var(--warn)">−15% '+n0(p15)+'</span><span class="ml" style="left:80%;color:var(--up)">−25% '+n0(p25)+'</span></div>'+
-    '<p class="note xs" style="margin-top:4px">量尺 0 到 −30% · 高點日 '+hi.date.replace(/-/g,'/')+'</p>';
+    '<div class="gauge" role="img" aria-label="回檔 '+dd.toFixed(1)+'%" style="margin-bottom:'+(lv.length>1?16:4)+'px"><div class="tr"></div><div class="fl" style="width:'+fill+'%;background:'+(hit!=null?'var(--up)':'var(--down)')+'"></div>'+mk+ml+'</div>'+
+    '<p class="note xs" style="margin-top:4px">量尺 0 到 −'+mx+'% · 高點日 '+hi.date.replace(/-/g,'/')+'</p>';
+}
+function alLv(c){var a=(state.alerts||{})[c]||[];return a.filter(function(x){return x>0}).sort(function(x,y){return y-x})}
+function alCheck(){
+  state.alerts=state.alerts||{};state.alHit=state.alHit||{};state.alAck=state.alAck||{};var ch=false,now=new Date().toISOString();
+  Object.keys(state.alerts).forEach(function(c){var px=priceNow(c).px;if(px==null)return;var H=state.alHit[c]||{},A=state.alAck[c]||{};
+    alLv(c).forEach(function(l){var k=String(l);
+      if(px<=l){if(!H[k]&&!A[k]){H[k]={px:px,at:now};ch=true}}
+      else if(A[k]){delete A[k];ch=true}});
+    state.alHit[c]=H;state.alAck[c]=A});
+  Object.keys(state.alHit).forEach(function(c){var lv=alLv(c).map(String);Object.keys(state.alHit[c]).forEach(function(k){if(lv.indexOf(k)<0){delete state.alHit[c][k];ch=true}})});
+  if(ch)scheduleSave();
+}
+function alHtml(c){
+  var H=(state.alHit||{})[c]||{},ks=Object.keys(H);if(!ks.length)return '';
+  ks.sort(function(a,b){return parseFloat(a)-parseFloat(b)});
+  var low=ks[0],px=priceNow(c).px,hit=H[low],nxt=alLv(c).filter(function(l){return px!=null&&l<px&&!H[String(l)]})[0];
+  var t=new Date(hit.at),ts=(t.getMonth()+1)+'/'+t.getDate()+' '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+  return '<div class="alrt"><div class="alT">[ALERT] '+esc(c)+' '+n2(hit.px)+' ≤ '+ks.map(function(k){return n2(parseFloat(k))}).join('、')+
+    '<br><span class="g">'+ts+(px!=null?' · 現價 '+n2(px)+(nxt?' · 下一個 '+n2(nxt):''):'')+'</span>'+
+    '<div class="rw"><span><span class="g">$ 執行加碼紀律</span><span class="k"></span></span><button type="button" data-ack="'+esc(c)+'">已處理</button></div></div></div>';
+}
+function renderAlSet(){
+  var box=$('alSet');if(!box)return;var codes=heldCodes();
+  if(!codes.length){box.innerHTML='<p class="xs mute" style="padding:6px 0">還沒有持股。</p>';return}
+  if(box.contains(document.activeElement))return;
+  box.innerHTML=codes.map(function(c){var p=priceNow(c).px;return '<div class="setrow"><label for="al_'+esc(c)+'"><span class="m" style="font-weight:600">'+esc(c)+'</span><br><span class="xs mute">現價 '+(p==null?'—':n2(p))+'</span></label><input class="inp sm m" type="text" id="al_'+esc(c)+'" data-al="'+esc(c)+'" inputmode="decimal" placeholder="未設定" value="'+alLv(c).join(', ')+'" style="width:150px;min-width:0;text-align:right"></div>'}).join('');
 }
 function renderHold(){
   var L=quotes.latest;
   $('qMeta').textContent=L&&L.asOf?((marketOpen()&&L.asOf===today()?'盤中 ':'收盤 ')+md(L.asOf)+' '+(L.time||'').slice(0,5)):'尚無報價';
   var codes=heldCodes();
   if(!codes.length){$('hHold').innerHTML='<div><span class="small mute">還沒有資料。從舊版搬家：到「更多」→「從備份還原」選舊版下載的 JSON 檔；或按下方「＋」記第一筆。</span></div>';return}
-  var h=holdingAt(null);
+  var h=holdingAt(null);alCheck();
   $('hHold').innerHTML=codes.map(function(c){
     var sh=h.held[c],cost=h.cost[c],p=priceNow(c),mk=p.px==null?null:sh*p.px,pl=mk==null?null:mk-cost,rt=pl==null||!cost?null:pl/cost*100;
     return '<div><div style="min-width:0"><div class="m" style="font-weight:600">'+esc(c)+'</div><div class="xs mute">'+esc(symName(c))+' · '+n0(sh)+' 股 · 均價 <span class="m">'+n2(cost/sh)+'</span></div></div>'+
       '<div style="text-align:right"><div class="m">'+(mk==null?'—':n0(mk))+'</div><div class="xs m '+cls(rt)+'">'+(rt==null?'未有價格':sign(rt)+Math.abs(rt).toFixed(2)+'%')+'</div>'+
-      '<div class="xs faint">'+(p.px==null?'':(p.src==='auto'?'':'手動 ')+'<span class="m">'+n2(p.px)+'</span>')+'</div></div></div>';
+      '<div class="xs faint">'+(p.px==null?'':(p.src==='auto'?'':'手動 ')+'<span class="m">'+n2(p.px)+'</span>')+'</div></div></div>'+alHtml(c);
   }).join('');
 }
 
@@ -836,6 +896,11 @@ function renderGoal(){
   if(gs.p)g+='<path class="hdraw" d="'+pth(pv)+'" fill="none" stroke="#22D3EE" stroke-width="2" stroke-dasharray="'+(gs.a?'5 3':'none')+'"/>';
   if(gs.a){g+=ser.length>1?'<path d="'+pth(av)+'" fill="none" stroke="#E6EDF3" stroke-width="2.6"/>':'';av.forEach(function(q){g+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="2.8" fill="#E6EDF3"/>'})}
   var cx=X(past),cy=Y(L.val);if(gs.a||gs.p)g+='<g stroke="#22D3EE" stroke-width="1"><line x1="'+(cx-10)+'" x2="'+(cx+10)+'" y1="'+cy+'" y2="'+cy+'"/><line x1="'+cx+'" x2="'+cx+'" y1="'+(cy-10)+'" y2="'+(cy+10)+'"/><circle cx="'+cx+'" cy="'+cy+'" r="6" fill="none"/></g>';
+  var HX=[];for(var hi=0;hi<=total;hi++){var o={m:addMonths(start+'-01',hi).slice(0,7)};
+    if(hi<=past){o.a=ser[hi].val;o.c=ser[hi].cost;o.cr=1}
+    if(gs.p&&hi>=past){var pk=proj[hi-past];if(pk){o.p=pk.v;if(hi>past){o.c=pk.c;o.cr=0}}}
+    HX.push(o)}
+  ui.hx={d:HX,X:X,Y:Y,W:W,H:H,Tp:Tp,ih:ih,Lx:Lx,R:R,gs:gs};
   var hitDate='—',cd='';
   if(hitK!=null){var d=new Date();d.setMonth(d.getMonth()+hitK);hitDate=d.getFullYear()+'/'+pad(d.getMonth()+1);cd='−'+(Math.floor(hitK/12)?Math.floor(hitK/12)+'Y':'')+(hitK%12)+'M';
     var ex=X(total),ey=Y(T);if(gs.p)g+='<g class="hfade"><rect x="'+(ex-7)+'" y="'+(ey-7)+'" width="14" height="14" fill="none" stroke="#A78BFA" stroke-width="1.5" transform="rotate(45 '+ex+' '+ey+')"/><text x="'+(ex-12)+'" y="'+(ey+18)+'" text-anchor="end" style="fill:#A78BFA;font-family:\'Share Tech Mono\',monospace;font-size:10px">LOCK '+hitDate.replace('/','.')+'</text></g>'}
@@ -848,7 +913,8 @@ function renderGoal(){
   $('chartBody').innerHTML='<section class="card hudc" id="hudCard"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="scan"></div>'+
     '<div class="hudl"><span>HODL://TARGET '+wan(T).replace(' ','')+'</span><span>ACH '+(pct<10?pct.toFixed(2):pct.toFixed(1))+'%</span></div>'+
     '<div class="eta">ETA '+(hitK==null?'50Y+':hitDate.replace('/','.'))+'<small>'+cd+'</small></div>'+
-    '<div class="svgw"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="真實投入與市值，以及預測達成曲線">'+g+'</svg></div>'+
+    '<div class="svgw hxw" id="hxw"><svg id="hxs" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="真實投入與市值，以及預測達成曲線。用手指在圖上左右滑動可查看每個月的數字">'+g+'<g id="hxg" style="display:none"><line id="hxl" y1="'+Tp+'" y2="'+(Tp+ih)+'" stroke="#E6EDF3" stroke-width="1" stroke-dasharray="3 3" opacity=".8"/><circle id="hxa" r="4" fill="#E6EDF3"/><circle id="hxp" r="4" fill="#22D3EE"/><circle id="hxc" r="3.5" fill="#F5B83D"/></g></svg><div class="hxt" id="hxt" hidden></div></div>'+
+    '<div class="xs" style="color:var(--faint);padding:2px 6px 0">用手指在圖上左右滑動，可查看每個月的數字</div>'+
     '<div class="hleg" role="group" aria-label="曲線顯示">'+[['a','#E6EDF3','實際市值'],['p','#22D3EE','預測市值'],['c','#F5B83D','投入本金']].map(function(x){return '<button type="button" class="htg" data-k="'+x[0]+'" aria-pressed="'+(!!gs[x[0]])+'"><i style="background:'+x[1]+'"></i>'+x[2]+'</button>'}).join('')+'</div>'+(zoom?'<div class="xs" style="color:var(--mute);padding:4px 6px 0">已放大顯示實際數字（開啟「預測市值」可看到目標與達成日）</div>':'')+
     (ser.length<12?'<div class="hwarn">資料月份不足，圖表可能失真</div>':'')+
     '<dl class="kv kv2" style="margin-top:12px"><div><dt>真實年化報酬</dt><dd class="'+cls(r)+'">'+(r>=0?'+':'−')+rTxt.replace(/^-/,'')+'</dd></div><div><dt>平均每月投入</dt><dd>'+n0(C)+'</dd></div>'+
@@ -857,7 +923,7 @@ function renderGoal(){
     '<p class="note" style="margin-top:6px">預測用真實年化報酬 '+rTxt+'（依每筆實際買進的時間與金額計算）、近 12 個月平均投入。投資期間越短，這個數字波動越大。</p></section>'+
     '<section class="card"><h2 style="margin-bottom:6px">里程碑</h2><div class="tw"><table><thead><tr><th>里程碑</th><th>門檻</th><th>首次達成日</th><th style="text-align:left">所需時間</th></tr></thead><tbody>'+miles+'</tbody></table></div><p class="note" style="margin-top:8px">依近 12 個月平均投入本金，以真實年化報酬 '+rTxt+' 從目前累積市值往後推算，試算並非結果預期。</p></section>'+
     '<section class="card"><h2 style="margin-bottom:6px">每月達成率</h2><div class="tw"><table><thead><tr><th>日期</th><th>市值</th><th>投入</th><th>達成率</th><th>較上月</th></tr></thead><tbody>'+(function(){return ser.slice().reverse().map(function(q,i,a){var p=q.val/T*100,pv2=a[i+1],d=pv2?p-pv2.val/T*100:null;return '<tr><td>'+rocS(q.m)+'</td><td>'+n0(q.val)+'</td><td>'+n0(q.cost)+'</td><td>'+p.toFixed(2)+'%</td><td class="'+cls(d)+'">'+(d==null?'—':sign(d)+Math.abs(d).toFixed(2))+'</td></tr>'}).join('')})()+'</tbody></table></div></section>';
-  var hc=$('hudCard');if(hc){hc.querySelectorAll('.hdraw').forEach(function(p){p.style.setProperty('--len',Math.ceil(p.getTotalLength()))});hc.classList.add('play');hc.querySelectorAll('.htg').forEach(function(bt){bt.addEventListener('click',function(){var k=bt.dataset.k;ui.gs[k]=ui.gs[k]?0:1;if(!ui.gs.a&&!ui.gs.p&&!ui.gs.c)ui.gs[k]=1;try{localStorage.setItem('dca-gs',JSON.stringify(ui.gs))}catch(e){}renderGoal()})})}
+  var hc=$('hudCard');if(hc){hc.querySelectorAll('.hdraw').forEach(function(p){p.style.setProperty('--len',Math.ceil(p.getTotalLength()))});hc.classList.add('play');bindHx();hc.querySelectorAll('.htg').forEach(function(bt){bt.addEventListener('click',function(){var k=bt.dataset.k;ui.gs[k]=ui.gs[k]?0:1;if(!ui.gs.a&&!ui.gs.p&&!ui.gs.c)ui.gs[k]=1;try{localStorage.setItem('dca-gs',JSON.stringify(ui.gs))}catch(e){}renderGoal()})})}
 }
 var SIM_R=[.08,.12,.18],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
 function fmtWan(v){return (Math.round(v/1000)/10).toLocaleString('zh-TW',{maximumFractionDigits:1})}
@@ -869,6 +935,28 @@ function monthEndDate(m){
   var r=quotes.monthEnd&&quotes.monthEnd[m];if(r&&r.asOf&&(r.final||m<curMonth()))return r.asOf.replace(/-/g,'/');
   if(m===curMonth()&&quotes.latest&&quotes.latest.asOf)return quotes.latest.asOf.replace(/-/g,'/');
   var d=new Date(+m.slice(0,4),+m.slice(5,7),0);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()-1);return fmtD(d);
+}
+function bindHx(){
+  var svg=$('hxs'),wrap=$('hxw');if(!svg)return;var hideT=null;
+  function show(ev){
+    var H=ui.hx;if(!H)return;var rc=svg.getBoundingClientRect(),vx=(ev.clientX-rc.left)/rc.width*H.W;
+    var n=H.d.length-1,i=Math.round((vx-H.Lx)/((H.W-H.Lx-H.R)/Math.max(1,n)));i=Math.max(0,Math.min(n,i));
+    var o=H.d[i],x=H.X(i),g=$('hxg');g.style.display='';$('hxl').setAttribute('x1',x);$('hxl').setAttribute('x2',x);
+    function dot(id,val,on){var el=$(id);if(on&&val!=null){el.style.display='';el.setAttribute('cx',x);el.setAttribute('cy',H.Y(val))}else el.style.display='none'}
+    dot('hxa',o.a,H.gs.a);dot('hxp',o.p,H.gs.p);dot('hxc',o.c,H.gs.c);
+    var rows=[];
+    if(H.gs.a&&o.a!=null)rows.push(['#E6EDF3','實際市值',o.a]);
+    if(H.gs.p&&o.p!=null)rows.push(['#22D3EE','預測市值',o.p]);
+    if(H.gs.c&&o.c!=null)rows.push(['#F5B83D',o.cr?'投入本金':'預估投入本金',o.c]);
+    var t=$('hxt');t.hidden=false;
+    t.innerHTML='<div class="hxm">'+rocS(o.m)+(o.a==null?' · 預測':'')+'</div>'+(rows.length?rows.map(function(r){return '<div class="hxr"><span><i style="background:'+r[0]+'"></i>'+r[1]+'</span><b>'+n0(r[2])+'</b></div>'}).join(''):'<div class="hxr"><span>這個月沒有已開啟的數據</span></div>');
+    var px=x/H.W*rc.width,tw=t.offsetWidth;t.style.left=(px>rc.width/2?Math.max(0,px-tw-10):Math.min(rc.width-tw,px+10))+'px';
+    clearTimeout(hideT);
+  }
+  function end(){clearTimeout(hideT);hideT=setTimeout(function(){$('hxg').style.display='none';$('hxt').hidden=true},1800)}
+  svg.addEventListener('pointerdown',function(e){show(e)});
+  svg.addEventListener('pointermove',function(e){if(e.pointerType==='mouse'||e.buttons||e.pressure>0)show(e)});
+  svg.addEventListener('pointerup',end);svg.addEventListener('pointerleave',end);svg.addEventListener('pointercancel',end);
 }
 function realRate(v0){
   // 年化資金加權報酬（XIRR）：每筆買進當作流出，今天的市值當作流入
@@ -951,7 +1039,8 @@ function renderMore(){
   document.querySelectorAll('.tgtTxt').forEach(function(e){e.textContent=wan(state.target)});
   if(document.activeElement!==$('target'))$('target').value=Math.round(state.target/1000)/10;
   renderIdx();
-  renderBackup();renderQuoteState();
+  if(document.activeElement!==$('ixLv'))$('ixLv').value=ixLevels().join(', ');
+  renderAlSet();renderBackup();renderQuoteState();
 }
 function renderQuoteState(){
   var L=quotes.latest;
@@ -975,6 +1064,11 @@ function renderPx(){
   }))});
 }
 $('target').addEventListener('change',guard('目標',function(){var v=Math.round(parseFloat($('target').value)*10000);if(isFinite(v)&&v>0){state.target=v;scheduleSave();renderAll();toast('目標改為 '+wan(v))}else $('target').value=Math.round(state.target/1000)/10}));
+$('ixLv').addEventListener('change',guard('加碼點',function(){var l=$('ixLv').value.split(/[,，、\s]+/).map(parseFloat).filter(function(x){return x>0&&x<90});if(!l.length){$('ixLv').value=ixLevels().join(', ');toast('請輸入 1～89 之間的數字');return}state.ixLv=l;$('ixLv').value=ixLevels().join(', ');scheduleSave();renderAll();toast('加碼點已更新：'+ixLevels().map(function(x){return '−'+x+'%'}).join('、'))}));
+$('hHold').addEventListener('click',guard('已處理',function(ev){var b=ev.target.closest('[data-ack]');if(!b)return;var c=b.dataset.ack,H=(state.alHit||{})[c]||{};state.alAck[c]=state.alAck[c]||{};Object.keys(H).forEach(function(k){state.alAck[c][k]=true});state.alHit[c]={};scheduleSave();renderAll();toast(c+' 已處理，漲回設定價以上後會重新啟用，價格回到設定價之上後會重新啟用')}));
+$('alSet').addEventListener('change',guard('價格提醒',function(ev){var i=ev.target.closest('[data-al]');if(!i)return;var c=i.dataset.al,raw=i.value.trim();var l=raw?raw.split(/[,，、\s]+/).map(parseFloat).filter(function(x){return x>0}):[];if(raw&&!l.length){toast('請輸入大於 0 的價格');i.value=alLv(c).join(', ');return}l=l.filter(function(x,j,a){return a.indexOf(x)===j}).slice(0,6);state.alerts=state.alerts||{};if(l.length)state.alerts[c]=l;else delete state.alerts[c];i.value=alLv(c).join(', ');scheduleSave();renderHold();toast(l.length?c+' 提醒：'+alLv(c).join('、'):c+' 已取消提醒')}));
+document.addEventListener('gesturestart',function(e){e.preventDefault()});
+document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
 
 /* 我的標的 */
 function renderSyms(){
