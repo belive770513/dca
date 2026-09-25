@@ -189,6 +189,7 @@ html[data-theme="light"] .hxt{background:rgba(255,255,255,.96);color:var(--ink);
 .onbl{display:flex;flex-direction:column;margin-top:6px}.onbi{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:11px 2px;color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
 .onbi:first-child{border-top:0}.onbi i{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--line2)}.onbi span{flex:1}.onbi b{color:var(--acc);font-weight:400}
 .onbi.ok{color:var(--faint);cursor:default}.onbi.ok span{text-decoration:line-through}.onbi.ok i{background:var(--down);border-color:var(--down)}
+.symc{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}.symc .tag{margin-left:0}.tag.off{opacity:.45}
 .streak{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;padding:8px 10px;border-radius:10px;background:#05090D;border:1px solid #12303A;font-family:"Share Tech Mono",var(--mono);font-size:12.5px;color:#9FE8F2;line-height:1.5}
 .streak b{color:#2FCB85;font-weight:400}.streak .bs{color:var(--mute)}
 .streak.w{border-color:rgba(251,191,36,.55);color:#FBBF24;box-shadow:0 0 14px rgba(251,191,36,.1)}.streak.w b{color:#FBBF24}
@@ -350,7 +351,7 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
 <script src="config.js"></script>
 </head>
 <body>
-<div id="splash" role="img" aria-label="HODL"><div class="sw">HODL</div><div class="sl"></div><div class="st">長期持有・時間站在你這邊</div><div class="sig" style="position:absolute;right:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px))">CREATED BY <b>BELIVE</b></div><div class="sig" style="position:absolute;left:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px))">VER <b>3.1</b></div></div>
+<div id="splash" role="img" aria-label="HODL"><div class="sw">HODL</div><div class="sl"></div><div class="st">長期持有・時間站在你這邊</div><div class="sig" style="position:absolute;right:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px))">CREATED BY <b>BELIVE</b></div><div class="sig" style="position:absolute;left:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px))">VER <b>3.4</b></div></div>
 <script>(function(){var sp=document.getElementById('splash'),done=false;function hide(){if(done)return;done=true;sp.classList.add('out');setTimeout(function(){sp.remove()},400)}
 sp.addEventListener('click',hide);setTimeout(hide,2000);})();</script>
 
@@ -402,7 +403,7 @@ sp.addEventListener('click',hide);setTimeout(hide,2000);})();</script>
       <div class="termT">~/hodl/rules.txt</div>
       <div id="hRules"></div>
     </section>
-    <div class="sigfoot"><div class="sig">CREATED BY <b>BELIVE</b></div><div class="v">HODL VER 3.1</div></div>
+    <div class="sigfoot"><div class="sig">CREATED BY <b>BELIVE</b></div><div class="v">HODL VER 3.4</div></div>
   </section>
 
   <!-- 記一筆 -->
@@ -1490,7 +1491,7 @@ function renderOnb(){
 }
 function contactMail(kind){
   var ua=navigator.userAgent,dev=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)?'iPad':/Android/.test(ua)?'Android':/Mac/.test(ua)?'Mac':/Windows/.test(ua)?'Windows':'其他';
-  var body='（請寫下你的想法）\n\n\n— App 版本 V3.1 · '+dev+' · '+(document.documentElement.getAttribute('data-theme')==='light'?'淺色':'深色')+(isStandalone()?' · 主畫面 App':' · 瀏覽器');
+  var body='（請寫下你的想法）\n\n\n— App 版本 V3.4 · '+dev+' · '+(document.documentElement.getAttribute('data-theme')==='light'?'淺色':'深色')+(isStandalone()?' · 主畫面 App':' · 瀏覽器');
   location.href='mailto:belive770513@gmail.com?subject='+encodeURIComponent('[HODL '+kind+'] ')+'&body='+encodeURIComponent(body);
 }
 var SHARED_R=.08,SIM_R=[.08,.12,.18],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
@@ -1675,7 +1676,7 @@ function renderSyms(){
   var h=holdingAt(null);
   $('symList').innerHTML=SYMS.length?SYMS.slice().sort(function(a,b){return codeCmp(a.c,b.c)}).map(function(x,i){
     var held=h.held[x.c]>0;
-    return '<div'+(i===0?' style="border-top:none"':'')+'><div><span class="m" style="font-weight:600">'+esc(x.c)+'</span> <span class="small mute">'+esc(x.n||'')+'</span>'+(held?' <span class="tag">持有中</span>':'')+'</div><button type="button" class="tiny symDel" data-c="'+esc(x.c)+'">刪除</button></div>';
+    return '<div'+(i===0?' style="border-top:none"':'')+'><div class="symc"><div><span class="m" style="font-weight:600">'+esc(x.c)+'</span> <span class="small mute">'+esc(x.n||'')+'</span></div><div>'+(held?'<span class="tag">持有中</span>':'<span class="tag off">未持有</span>')+'</div></div><button type="button" class="tiny symDel" data-c="'+esc(x.c)+'">刪除</button></div>';
   }).join(''):'<div style="border-top:none"><span class="small mute">還沒有標的，先在下面輸入股票代號。</span></div>';
   document.querySelectorAll('#symList .symDel').forEach(function(b){armDelete(b,function(){
     state.syms=state.syms.filter(function(x){return x.c!==b.dataset.c});setSyms(state.syms);scheduleSave();renderAll();toast('已從清單移除 '+b.dataset.c);
