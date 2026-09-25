@@ -36,6 +36,10 @@
 .hudc .eta small{font-size:12px;color:var(--vio);margin-left:6px}
 .hleg{display:flex;gap:12px;font-family:"Share Tech Mono",var(--mono);font-size:11px;color:var(--mute);padding:2px 6px}
 .hleg i{display:inline-block;width:12px;height:2px;vertical-align:middle;margin-right:4px}
+.htg{min-height:32px;padding:0 10px;border-radius:8px;border:1px solid #12303A;background:transparent;color:var(--mute);font-family:"Share Tech Mono",var(--mono);font-size:11px;white-space:nowrap}
+.htg[aria-pressed="true"]{border-color:#1F6F7C;color:var(--ink);background:rgba(34,211,238,.08)}
+.htg[aria-pressed="false"] i{opacity:.3}
+.hleg{flex-wrap:wrap;gap:6px!important;margin-top:4px}
 .hwarn{text-align:right;font-size:10px;color:var(--faint);padding:2px 6px 0}
 .hwarn::before{content:"⚠ ";color:var(--warn)}
 .hdraw{stroke-dasharray:var(--len,2000);stroke-dashoffset:var(--len,2000)}
@@ -811,26 +815,30 @@ function renderGoal(){
   // 預測：從本月往後逐月推算到目標
   var proj=[{k:0,v:L.val,c:L.cost}],v=L.val,cst=L.cost,k=0,hitK=null;
   while(k<600){v=v*(1+mi)+C;cst+=C;k++;proj.push({k:k,v:v,c:cst});if(v>=T){hitK=k;break}}
-  var past=ser.length-1,total=past+proj.length-1;
-  var W=320,H=176,Lx=30,R=10,Tp=12,B=22,iw=W-Lx-R,ih=H-Tp-B,top=T*1.1;
+  var gs=ui.gs||(ui.gs=(function(){try{return JSON.parse(localStorage.getItem('dca-gs'))||null}catch(e){return null}})()||{a:1,p:1,c:1});
+  var past=ser.length-1,total=gs.p?past+proj.length-1:Math.max(1,past);
+  var W=320,H=176,Lx=30,R=10,Tp=12,B=22,iw=W-Lx-R,ih=H-Tp-B,top=T*1.1,zoom=!gs.p;
+  if(zoom){var mx=0;ser.forEach(function(q){if(gs.a)mx=Math.max(mx,q.val);if(gs.c)mx=Math.max(mx,q.cost)});top=niceMax(Math.max(mx,1)*1.15)}
   function X(i){return Lx+iw*i/Math.max(1,total)}function Y(val){return Tp+ih-ih*Math.max(0,Math.min(val,top))/top}
   var g='';
   for(var gx=Lx;gx<=W-R+.5;gx+=24)g+='<line x1="'+gx+'" x2="'+gx+'" y1="'+Tp+'" y2="'+(Tp+ih)+'" stroke="#12303A"/>';
-  [0,.25,.5,.75,1].forEach(function(f){var y=Y(T*f);g+='<line x1="'+Lx+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="#12303A"/><text x="'+(Lx-4)+'" y="'+(y+3)+'" text-anchor="end" style="fill:#3E7C8C">'+Math.round(T*f/10000)+'</text>'});
-  var start=ser[0].m,yStep=total>240?5:total>96?2:1;
-  for(var yy=0;yy*12<=total;yy+=yStep){g+='<text x="'+X(yy*12)+'" y="'+(H-6)+'" text-anchor="'+(yy===0?'start':'middle')+'" style="fill:#3E7C8C">'+(+addMonths(start+'-01',yy*12).slice(0,4)-1911)+'</text>'}
-  g+='<line x1="'+Lx+'" x2="'+(W-R)+'" y1="'+Y(T)+'" y2="'+Y(T)+'" stroke="#22D3EE" opacity=".8"/>';
+  [0,.25,.5,.75,1].forEach(function(f){var val=(zoom?top:T)*f,y=Y(val);g+='<line x1="'+Lx+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="#12303A"/><text x="'+(Lx-4)+'" y="'+(y+3)+'" text-anchor="end" style="fill:#3E7C8C">'+(zoom?(val/10000).toLocaleString('zh-TW',{maximumFractionDigits:1}):Math.round(val/10000))+'</text>'});
+  var start=ser[0].m;
+  if(zoom){ser.forEach(function(q,i){var st=Math.max(1,Math.ceil(ser.length/6));if(i%st===0||i===past)g+='<text x="'+X(i)+'" y="'+(H-6)+'" text-anchor="'+(i===0?'start':i===past?'end':'middle')+'" style="fill:#3E7C8C">'+rocS(q.m)+'</text>'})}
+  else{var yStep=total>240?5:total>96?2:1;for(var yy=0;yy*12<=total;yy+=yStep){g+='<text x="'+X(yy*12)+'" y="'+(H-6)+'" text-anchor="'+(yy===0?'start':'middle')+'" style="fill:#3E7C8C">'+(+addMonths(start+'-01',yy*12).slice(0,4)-1911)+'</text>'}
+    g+='<line x1="'+Lx+'" x2="'+(W-R)+'" y1="'+Y(T)+'" y2="'+Y(T)+'" stroke="#22D3EE" opacity=".8"/>'}
   function pth(pts){return pts.map(function(q,i){return (i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)}).join(' ')}
   var stp=Math.max(1,Math.floor(proj.length/150)),av=ser.map(function(q,i){return [X(i),Y(q.val)]}),ac=ser.map(function(q,i){return [X(i),Y(q.cost)]});
-  var pv=av.slice(),pc=ac.slice();for(var j=stp;j<proj.length;j+=stp){pv.push([X(past+proj[j].k),Y(proj[j].v)]);pc.push([X(past+proj[j].k),Y(proj[j].c)])}
-  var lj=proj[proj.length-1];pv.push([X(past+lj.k),Y(lj.v)]);pc.push([X(past+lj.k),Y(lj.c)]);
-  g+='<path class="hdraw hd2" d="'+pth(pc)+'" fill="none" stroke="#F5B83D" stroke-width="1" opacity=".7"/>';
-  g+='<path class="hdraw" d="'+pth(pv)+'" fill="none" stroke="#22D3EE" stroke-width="2"/>';
-  if(ser.length>1)g+='<path d="'+pth(av)+'" fill="none" stroke="#E6EDF3" stroke-width="2.4"/>';
-  var cx=X(past),cy=Y(L.val);g+='<g stroke="#22D3EE" stroke-width="1"><line x1="'+(cx-10)+'" x2="'+(cx+10)+'" y1="'+cy+'" y2="'+cy+'"/><line x1="'+cx+'" x2="'+cx+'" y1="'+(cy-10)+'" y2="'+(cy+10)+'"/><circle cx="'+cx+'" cy="'+cy+'" r="6" fill="none"/></g>';
+  var pv=av.slice(-1),pc=ac.slice();
+  if(gs.p){for(var j=stp;j<proj.length;j+=stp){pv.push([X(past+proj[j].k),Y(proj[j].v)]);pc.push([X(past+proj[j].k),Y(proj[j].c)])}
+    var lj=proj[proj.length-1];pv.push([X(past+lj.k),Y(lj.v)]);pc.push([X(past+lj.k),Y(lj.c)])}
+  if(gs.c)g+=pc.length>1?'<path class="hdraw hd2" d="'+pth(pc)+'" fill="none" stroke="#F5B83D" stroke-width="'+(zoom?2:1)+'" opacity=".85"/>':'<circle cx="'+pc[0][0]+'" cy="'+pc[0][1]+'" r="3" fill="#F5B83D"/>';
+  if(gs.p)g+='<path class="hdraw" d="'+pth(pv)+'" fill="none" stroke="#22D3EE" stroke-width="2" stroke-dasharray="'+(gs.a?'5 3':'none')+'"/>';
+  if(gs.a){g+=ser.length>1?'<path d="'+pth(av)+'" fill="none" stroke="#E6EDF3" stroke-width="2.6"/>':'';av.forEach(function(q){g+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="2.8" fill="#E6EDF3"/>'})}
+  var cx=X(past),cy=Y(L.val);if(gs.a||gs.p)g+='<g stroke="#22D3EE" stroke-width="1"><line x1="'+(cx-10)+'" x2="'+(cx+10)+'" y1="'+cy+'" y2="'+cy+'"/><line x1="'+cx+'" x2="'+cx+'" y1="'+(cy-10)+'" y2="'+(cy+10)+'"/><circle cx="'+cx+'" cy="'+cy+'" r="6" fill="none"/></g>';
   var hitDate='—',cd='';
   if(hitK!=null){var d=new Date();d.setMonth(d.getMonth()+hitK);hitDate=d.getFullYear()+'/'+pad(d.getMonth()+1);cd='−'+(Math.floor(hitK/12)?Math.floor(hitK/12)+'Y':'')+(hitK%12)+'M';
-    var ex=X(total),ey=Y(T);g+='<g class="hfade"><rect x="'+(ex-7)+'" y="'+(ey-7)+'" width="14" height="14" fill="none" stroke="#A78BFA" stroke-width="1.5" transform="rotate(45 '+ex+' '+ey+')"/><text x="'+(ex-12)+'" y="'+(ey+18)+'" text-anchor="end" style="fill:#A78BFA;font-family:\'Share Tech Mono\',monospace;font-size:10px">LOCK '+hitDate.replace('/','.')+'</text></g>'}
+    var ex=X(total),ey=Y(T);if(gs.p)g+='<g class="hfade"><rect x="'+(ex-7)+'" y="'+(ey-7)+'" width="14" height="14" fill="none" stroke="#A78BFA" stroke-width="1.5" transform="rotate(45 '+ex+' '+ey+')"/><text x="'+(ex-12)+'" y="'+(ey+18)+'" text-anchor="end" style="fill:#A78BFA;font-family:\'Share Tech Mono\',monospace;font-size:10px">LOCK '+hitDate.replace('/','.')+'</text></g>'}
   var elapsed=Math.max(1,ser.length),avgP=pct/elapsed;
   var prev=ser.length>1?ser[ser.length-2]:{val:0,cost:0},prev2=ser.length>2?ser[ser.length-3]:{val:0,cost:0};
   var mP=(L.val-prev.val)/T*100,lastP=ser.length>1?(prev.val-prev2.val)/T*100:null;
@@ -841,7 +849,7 @@ function renderGoal(){
     '<div class="hudl"><span>HODL://TARGET '+wan(T).replace(' ','')+'</span><span>ACH '+(pct<10?pct.toFixed(2):pct.toFixed(1))+'%</span></div>'+
     '<div class="eta">ETA '+(hitK==null?'50Y+':hitDate.replace('/','.'))+'<small>'+cd+'</small></div>'+
     '<div class="svgw"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="真實投入與市值，以及預測達成曲線">'+g+'</svg></div>'+
-    '<div class="hleg"><span><i style="background:#E6EDF3"></i>實際市值</span><span><i style="background:#22D3EE"></i>預測市值</span><span><i style="background:#F5B83D"></i>投入本金</span></div>'+
+    '<div class="hleg" role="group" aria-label="曲線顯示">'+[['a','#E6EDF3','實際市值'],['p','#22D3EE','預測市值'],['c','#F5B83D','投入本金']].map(function(x){return '<button type="button" class="htg" data-k="'+x[0]+'" aria-pressed="'+(!!gs[x[0]])+'"><i style="background:'+x[1]+'"></i>'+x[2]+'</button>'}).join('')+'</div>'+(zoom?'<div class="xs" style="color:var(--mute);padding:4px 6px 0">已放大顯示實際數字（開啟「預測市值」可看到目標與達成日）</div>':'')+
     (ser.length<12?'<div class="hwarn">資料月份不足，圖表可能失真</div>':'')+
     '<dl class="kv kv2" style="margin-top:12px"><div><dt>真實年化報酬</dt><dd class="'+cls(r)+'">'+(r>=0?'+':'−')+rTxt.replace(/^-/,'')+'</dd></div><div><dt>平均每月投入</dt><dd>'+n0(C)+'</dd></div>'+
     '<div><dt>平均每月進度</dt><dd>'+sp(avgP)+'</dd></div><div><dt>本月進度</dt><dd class="'+cls(mP)+'">'+sp(mP)+'</dd></div></dl>'+
@@ -849,7 +857,7 @@ function renderGoal(){
     '<p class="note" style="margin-top:6px">預測用真實年化報酬 '+rTxt+'（依每筆實際買進的時間與金額計算）、近 12 個月平均投入。投資期間越短，這個數字波動越大。</p></section>'+
     '<section class="card"><h2 style="margin-bottom:6px">里程碑</h2><div class="tw"><table><thead><tr><th>里程碑</th><th>門檻</th><th>首次達成日</th><th style="text-align:left">所需時間</th></tr></thead><tbody>'+miles+'</tbody></table></div><p class="note" style="margin-top:8px">依近 12 個月平均投入本金，以真實年化報酬 '+rTxt+' 從目前累積市值往後推算，試算並非結果預期。</p></section>'+
     '<section class="card"><h2 style="margin-bottom:6px">每月達成率</h2><div class="tw"><table><thead><tr><th>日期</th><th>市值</th><th>投入</th><th>達成率</th><th>較上月</th></tr></thead><tbody>'+(function(){return ser.slice().reverse().map(function(q,i,a){var p=q.val/T*100,pv2=a[i+1],d=pv2?p-pv2.val/T*100:null;return '<tr><td>'+rocS(q.m)+'</td><td>'+n0(q.val)+'</td><td>'+n0(q.cost)+'</td><td>'+p.toFixed(2)+'%</td><td class="'+cls(d)+'">'+(d==null?'—':sign(d)+Math.abs(d).toFixed(2))+'</td></tr>'}).join('')})()+'</tbody></table></div></section>';
-  var hc=$('hudCard');if(hc){hc.querySelectorAll('.hdraw').forEach(function(p){p.style.setProperty('--len',Math.ceil(p.getTotalLength()))});hc.classList.add('play')}
+  var hc=$('hudCard');if(hc){hc.querySelectorAll('.hdraw').forEach(function(p){p.style.setProperty('--len',Math.ceil(p.getTotalLength()))});hc.classList.add('play');hc.querySelectorAll('.htg').forEach(function(bt){bt.addEventListener('click',function(){var k=bt.dataset.k;ui.gs[k]=ui.gs[k]?0:1;if(!ui.gs.a&&!ui.gs.p&&!ui.gs.c)ui.gs[k]=1;try{localStorage.setItem('dca-gs',JSON.stringify(ui.gs))}catch(e){}renderGoal()})})}
 }
 var SIM_R=[.08,.12,.18],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
 function fmtWan(v){return (Math.round(v/1000)/10).toLocaleString('zh-TW',{maximumFractionDigits:1})}
