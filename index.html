@@ -359,7 +359,7 @@ th{white-space:normal;line-height:1.3;vertical-align:bottom}
 <script src="config.js"></script>
 </head>
 <body>
-<div id="splash" role="img" aria-label="HODL"><div class="sw">HODL</div><div class="sl"></div><div class="st">長期持有・時間站在你這邊</div><div class="sig" style="position:absolute;right:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px))">CREATED BY <b>BELIVE</b></div><div class="sig" style="position:absolute;left:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px))">VER <b>3.5</b></div></div>
+<div id="splash" role="img" aria-label="HODL"><div class="sw">HODL</div><div class="sl"></div><div class="st">長期持有・時間站在你這邊</div><div class="sig" style="position:absolute;right:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px))">CREATED BY <b>BELIVE</b></div><div class="sig" style="position:absolute;left:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px))">VER <b>3.6</b></div></div>
 <script>(function(){var sp=document.getElementById('splash'),done=false;function hide(){if(done)return;done=true;sp.classList.add('out');setTimeout(function(){sp.remove()},400)}
 sp.addEventListener('click',hide);setTimeout(hide,2000);})();</script>
 
@@ -411,7 +411,7 @@ sp.addEventListener('click',hide);setTimeout(hide,2000);})();</script>
       <div class="termT">~/hodl/rules.txt</div>
       <div id="hRules"></div>
     </section>
-    <div class="sigfoot"><div class="sig">CREATED BY <b>BELIVE</b></div><div class="v">HODL VER 3.5</div></div>
+    <div class="sigfoot"><div class="sig">CREATED BY <b>BELIVE</b></div><div class="v">HODL VER 3.6</div></div>
   </section>
 
   <!-- 記一筆 -->
@@ -849,7 +849,7 @@ function renderHold(){
       '<div style="text-align:right"><div class="m">'+(mk==null?'—':n0(mk))+'</div><div class="xs m '+cls(rt)+'">'+(rt==null?'未有價格':sign(rt)+Math.abs(rt).toFixed(2)+'%')+'</div>'+
       '<div class="xs faint">'+(p.px==null?'':(p.src==='auto'?'':'手動 ')+'<span class="m">'+n2(p.px)+'</span>')+'</div></div></div>'+alHtml(c);
   }).join('');
-  var X=xirrAll();$('hXirr').innerHTML=X&&X.r!=null?'<div class="xs" style="display:flex;justify-content:space-between;padding:8px 0 6px;border-top:1px solid var(--line)"><span class="mute">實際年化 XIRR · 持有以來'+(X.days<365?' <span class="faint">（未滿一年）</span>':'')+' '+qh('home')+'</span><span class="m '+cls(X.r)+'">'+pctS(X.r)+'</span></div>'+qhBox('home',H_XIRR+(X.days<365?'<br>'+XIRR_NOTE1:'')):'';
+  var X=xirrAll();$('hXirr').innerHTML=X&&X.r==null&&X.wait?'<div class="xs" style="display:flex;justify-content:space-between;padding:8px 0 6px;border-top:1px solid var(--line)"><span class="mute">實際年化 XIRR · 持有以來 '+qh('home')+'</span><span class="faint">'+X.wait+' 起顯示</span></div>'+qhBox('home',H_XIRR+'<br>'+XW_NOTE):X&&X.r!=null?'<div class="xs" style="display:flex;justify-content:space-between;padding:8px 0 6px;border-top:1px solid var(--line)"><span class="mute">實際年化 XIRR · 持有以來'+(X.days<365?' <span class="faint">（未滿一年）</span>':'')+' '+qh('home')+'</span><span class="m '+cls(X.r)+'">'+pctS(X.r)+'</span></div>'+qhBox('home',H_XIRR+(X.days<365?'<br>'+XIRR_NOTE1:'')):'';
   $('hHold').insertAdjacentHTML('beforeend',allCodes().filter(function(c){return codes.indexOf(c)<0}).map(alHtml).join(''));
 }
 
@@ -1330,12 +1330,14 @@ function xirrSolve(F){ // F:[{d,a}] a>0＝回到手上的錢
 function xirrAll(){ // 持有以來：每筆買賣＋今天的市值
   var es=state.entries;if(!es.length)return null;var N=allocNow();if(!N.ok||!(N.tot>0))return null;
   var L=quotes.latest,end=L&&L.asOf?L.asOf:today(),F=es.map(function(e){return {d:e.date,a:-amount(e)}}),first=es.map(function(e){return e.date}).sort()[0];
-  F.push({d:end,a:N.tot});var days=dDays(first,end);if(days<30)return {r:null,days:days};return {r:xirrSolve(F),days:days,from:first}}
+  F.push({d:end,a:N.tot});var days=dDays(first,end);if(days<30)return {r:null,days:days,from:first,wait:xWaitD(first)};return {r:xirrSolve(F),days:days,from:first}}
+function xWaitD(first){var t=new Date(Date.parse(first)+30*864e5);return (t.getUTCMonth()+1)+'/'+t.getUTCDate()}
+var XW_NOTE='累積滿 30 天才計算，期間太短換算成年化會嚴重失真。';
 function xirrWin(S,from){ // 指定起點：起點市值當作投入
   var st=null;S.forEach(function(x){if(x.d===from)st=x});if(!st||!(st.v>0))return null;var last=S[S.length-1],days=dDays(from,last.d);
   var F=[{d:from,a:-st.v}];S.forEach(function(x){if(x.d>from&&x.flow)F.push({d:x.d,a:-x.flow})});F.push({d:last.d,a:last.v});
   var t=twr(S,from);return {r:days<30?null:xirrSolve(F),tw:t==null||days<30?null:Math.pow(1+t,365/days)-1,days:days}}
-function xirrGoal(){var X=xirrAll(),a=annR();if(!X||X.r==null)return '';var top=Math.max(a*2,X.r,0.01),w=Math.max(0,Math.min(100,X.r/top*100)),mk=a/top*100;
+function xirrGoal(){var X=xirrAll(),a=annR();if(X&&X.r==null&&X.wait)return '<div class="xir" style="margin-top:12px"><div class="kv1 xs"><span class="mute">你設定的年化</span><span class="m">'+(a*100).toFixed(1)+'%</span></div><div class="kv1"><span>你的實際年化 <span class="chip">XIRR</span> '+qh('goal')+'</span><span class="xs faint">'+X.wait+' 起顯示</span></div>'+qhBox('goal',H_XIRR+'<br>'+XW_NOTE)+'</div>';if(!X||X.r==null)return '';var top=Math.max(a*2,X.r,0.01),w=Math.max(0,Math.min(100,X.r/top*100)),mk=a/top*100;
   return '<div class="xir" style="margin-top:12px"><div class="kv1 xs"><span class="mute">你設定的年化</span><span class="m">'+(a*100).toFixed(1)+'%</span></div><div class="kv1"><span>你的實際年化 <span class="chip">XIRR</span> <span class="xs mute">持有以來</span> '+qh('goal')+'</span><b class="m '+cls(X.r)+'">'+pctS(X.r)+'</b></div>'+
   qhBox('goal',H_XIRR+'<br>和你設定的年化相比，可以看出目前報酬率是否跟上計畫。')+'<div class="alcb" style="margin-top:6px"><b style="width:'+w+'%;background:'+(X.r>=a?'var(--acc)':'var(--amb)')+'"></b><s style="left:'+Math.min(99.5,mk)+'%"></s></div>'+
   '<div class="xs faint" style="margin-top:6px;line-height:1.6">白線＝你設定的 '+(a*100).toFixed(1)+'%。實際年化'+(X.r>=a?'高於':'低於')+'設定；能否如期達標還要看每月投入是否足夠。不含股利。'+(X.days<365?XIRR_NOTE1:'')+'</div></div>'}
@@ -1378,6 +1380,7 @@ function renderPerf(append){
   var rows=R.map(function(r){var d=r.me!=null&&r.ix!=null?r.me-r.ix:null;return '<div class="pr"><div class="pl"><b>'+r.l+'</b>'+(d==null?'':'<span class="xs '+(d>=0?'up':'down')+'">'+(d>=0?'贏 ':'輸 ')+Math.abs(d*100).toFixed(2)+'%</span>')+'</div><div class="pc"><span class="xs mute">我的組合</span>'+bar(r.me,'var(--acc)')+'<span class="xs mute">加權指數</span>'+bar(r.ix,'#8B9AAB')+'</div></div>'}).join('');
   ui.calM=ui.calM||S[S.length-1].d.slice(0,7);var minM=S[0].d.slice(0,7),maxM=S[S.length-1].d.slice(0,7);if(ui.calM<minM)ui.calM=minM;if(ui.calM>maxM)ui.calM=maxM;
   var C=calHtml(S,ui.calM),last=S[S.length-1],XR=R.length?R[R.length-1]:null,XW=XR?xirrWin(S,XR.from):null,xh='';
+  var XA=xirrAll();if(!(XW&&XW.r!=null&&XW.tw!=null)&&XA&&XA.wait)xh='<div class="xir"><div class="kv1"><span>我的實際年化 <span class="chip">XIRR</span> '+qh('perf')+'</span><span class="faint">—</span></div><div class="kv1 xs"><span class="mute">選股表現（TWR 年化） '+qh('perf')+'</span><span class="faint">—</span></div>'+qhBox('perf',H_XIRR+'<br>'+H_TWR+'<br>'+H_GAP)+'<div class="xs faint" style="margin-top:4px">累積滿 30 天後顯示（'+XA.wait+' 起）。</div></div>';
   if(XW&&XW.r!=null&&XW.tw!=null){var tm=XW.r-XW.tw;xh='<div class="xir"><div class="kv1"><span>我的實際年化 <span class="chip">XIRR</span> <span class="xs mute">'+XR.l+'</span> '+qh('perf')+'</span><b class="m '+cls(XW.r)+'">'+pctS(XW.r)+'</b></div>'+
     '<div class="kv1 xs"><span class="mute">選股表現（TWR 年化） '+qh('perf')+'</span><span class="m '+cls(XW.tw)+'">'+pctS(XW.tw)+'</span></div><div class="kv1 xs"><span class="mute">投入時機的影響</span><span class="m '+cls(tm)+'">'+pctS(tm)+'</span></div>'+
     qhBox('perf',H_XIRR+'<br>'+H_TWR+'<br>'+H_GAP)+'<div class="xs faint" style="margin-top:4px;line-height:1.6">實際年化比選股表現'+(tm>=0?'高，代表比較多錢在相對低點投入':'低，代表比較多錢在相對高點投入')+'。不含股利。'+(XW.days<365?XIRR_NOTE1:'')+'</div></div>'}
@@ -1541,7 +1544,7 @@ function renderOnb(){
 }
 function contactMail(kind){
   var ua=navigator.userAgent,dev=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)?'iPad':/Android/.test(ua)?'Android':/Mac/.test(ua)?'Mac':/Windows/.test(ua)?'Windows':'其他';
-  var body='（請寫下你的想法）\n\n\n— App 版本 V3.5 · '+dev+' · '+(document.documentElement.getAttribute('data-theme')==='light'?'淺色':'深色')+(isStandalone()?' · 主畫面 App':' · 瀏覽器');
+  var body='（請寫下你的想法）\n\n\n— App 版本 V3.6 · '+dev+' · '+(document.documentElement.getAttribute('data-theme')==='light'?'淺色':'深色')+(isStandalone()?' · 主畫面 App':' · 瀏覽器');
   location.href='mailto:belive770513@gmail.com?subject='+encodeURIComponent('[HODL '+kind+'] ')+'&body='+encodeURIComponent(body);
 }
 var SHARED_R=.08,SIM_R=[.08,.12,.18],SIM_COL=['#8B9AAB','#22D3EE','#F5B83D'];
