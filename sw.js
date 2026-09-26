@@ -1,5 +1,5 @@
 // 離線外殼：先抓網路（拿到最新版），3 秒沒回應或失敗才用快取。報價與 Firebase 資料不經過這裡。
-const CACHE = 'dca-shell-v11';
+const CACHE = 'dca-shell-v12';
 const SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'hodl-192.png', 'hodl-512.png', 'hodl-apple-180.png'];
 const FB = 'https://www.gstatic.com/firebasejs/';   // 版本號固定的 Firebase 程式，快取優先，離線也能啟動
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
